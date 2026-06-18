@@ -9,6 +9,7 @@
 ## 
 ## Encaminhamentos --------------------------------------------
 # n de participantes encaminhados para manejo
+
 # Fizeram Manejo ==============================================================
 # foram encaminhados para manejo
 tri_manejo_enc_ids <- df %>% 
@@ -19,7 +20,7 @@ tri_manejo_enc_ids <- df %>%
 tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 
 # ## Aguardando atendimento ------------------------------------
-# tri_ids_aguardando_atend <- df |>
+# tri_ids_aguard_atend <- df |>
 #   filter(
 #     # Form Encerramento - Triagem
 #     (particip_eleg_continuidade %in% "Aguardando avaliação do psiquiatra" |
@@ -38,16 +39,16 @@ tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 #   distinct(record_id) |>
 #   pull()
 # 
-# tri_manejo_aguardando_atend_n <- df |>
-#   filter(record_id %in% tri_ids_aguardando_atend) |>
+# tri_manejo_aguard_atend_n <- df |>
+#   filter(record_id %in% tri_ids_aguard_atend) |>
 #   nrow()
-# tri_manejo_aguardando_atend_n <- glue::glue(
-#   "{tri_manejo_aguardando_atend_n}/{tri_manejo_enc_n} ({round(100*tri_manejo_aguardando_atend_n/tri_manejo_enc_n, 2)} %)"
+# tri_manejo_aguard_atend_n <- glue::glue(
+#   "{tri_manejo_aguard_atend_n}/{tri_manejo_enc_n} ({round(100*tri_manejo_aguard_atend_n/tri_manejo_enc_n, 2)} %)"
 # )
 # 
 # 
 # ## Aguardando atendimento ====================================
-# tabela_aguardando_atendimento <- df |>
+# tabela_aguard_atendimento <- df |>
 #   filter(redcap_event_name == "Triagem (Arm 1: Participantes)") |>
 #   reframe(
 #     aguardando = case_when(
@@ -60,9 +61,9 @@ tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 #     )
 #   ) |> 
 #   with(rstatix::freq_table(aguardando))
-# tri_manejo_aguardando_atend_n <- glue::glue(
-#   "{tabela_aguardando_atendimento$n[2]}/{tri_manejo_enc_n} ({round(100*tabela_aguardando_atendimento$n[2]/tri_manejo_enc_n, 2)} %)"
-#   # "{tabela_aguardando_atendimento$n[2]} ({round(100*tabela_aguardando_atendimento$n[2]/n_tri_encam, 2)} %)"
+# tri_manejo_aguard_atend_n <- glue::glue(
+#   "{tabela_aguard_atendimento$n[2]}/{tri_manejo_enc_n} ({round(100*tabela_aguard_atendimento$n[2]/tri_manejo_enc_n, 2)} %)"
+#   # "{tabela_aguard_atendimento$n[2]} ({round(100*tabela_aguard_atendimento$n[2]/n_tri_encam, 2)} %)"
 # )
 
 
@@ -190,7 +191,7 @@ tri_manejo_retorno_str <- glue(
 
 
 ## Aguardando atendimento ----------------------------------
-tri_manejo_aguardando_atend_ids <- df |>
+tri_manejo_aguard_atend_ids <- df |>
   filter(
     redcap_event_name == "Triagem (Arm 1: Participantes)" &
       aceita_tcle %in% "Aceito participar do estudo" &
@@ -206,7 +207,7 @@ tri_manejo_aguardando_atend_ids <- df |>
   distinct(record_id) |>
   pull()
 
-tri_manejo_aguardando_atend_n <- length(tri_manejo_aguardando_atend_ids)
+tri_manejo_aguard_atend_n <- length(tri_manejo_aguard_atend_ids)
 
 
 ## Alto Risco ----------------------------------------------
@@ -232,14 +233,14 @@ tri_manejo_risco_algum_str <- glue(
 )
 
 
-tri_n_risco <- df |>
+tri_manejo_risco_n <- df |>
   summarise(
     risco_suic = sum(c(atend_psico_checklist_2 == "Sim"), na.rm = TRUE)
   ) |>
   pull()
-tri_n_risco <- glue(
-  "{tri_n_risco}/{tri_manejo_enc_n} ({round(100*tri_n_risco/tri_manejo_enc_n, 2)} %)"
-  # "{tri_n_risco} ({round(100*tri_n_risco/tri_manejo_algum_realiz_n, 2)} %)"
+tri_manejo_risco_str <- glue(
+  "{tri_manejo_risco_n}/{tri_manejo_enc_n} ({round(100*tri_manejo_risco_n/tri_manejo_enc_n, 2)} %)"
+  # "{tri_manejo_risco_n} ({round(100*tri_manejo_risco_n/tri_manejo_algum_realiz_n, 2)} %)"
 )
 
 
@@ -412,7 +413,7 @@ tri_manejo_tabela <- tibble(
   ),
   `Frequência` = c(
     tri_manejo_enc_n,
-    tri_manejo_aguardando_atend_n,
+    tri_manejo_aguard_atend_n,
     tri_manejo_retorno_str,
     tri_manejo_desist_n,
     tri_manejo_algum_realiz_n,
