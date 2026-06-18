@@ -71,7 +71,7 @@ tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 
 ## Realizadas ------------------------------------------------
 ### n Participantes com algum atendimento realizado
-# n_tri_manejo_realiz <- glue("{triagem_manejo_nao_eleg + triagem_manejo_eleg}")
+# n_tri_manejo_realiz <- glue("{tri_manejo_nao_eleg + tri_manejo_eleg}")
 tri_manejo_algum_realiz_ids <- df |>
   # filter(record_id %in% c(triagem_manejo_eleg_ids, triagem_manejo_nao_eleg_ids)) |>
   filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
@@ -199,8 +199,8 @@ tri_manejo_aguardando_atend_ids <- df |>
       !record_id %in% c(
         tri_manejo_desist_ids, 
         tri_manejo_algum_realiz_ids,
-        tri_manejo_retorno_ids, triagem_manejo_eleg_ids, triagem_manejo_nao_eleg_ids,
-        sess_a_finalizada_ids
+        tri_manejo_retorno_ids, trim_manejo_eleg_ids, tri_manejo_nao_eleg_ids,
+        interv_sa_realiz_ids
       )
   ) |>
   distinct(record_id) |>
