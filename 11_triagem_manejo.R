@@ -199,7 +199,7 @@ tri_manejo_aguardando_atend_ids <- df |>
       !record_id %in% c(
         tri_manejo_desist_ids, 
         tri_manejo_algum_realiz_ids,
-        tri_manejo_retorno_ids, trim_manejo_eleg_ids, tri_manejo_nao_eleg_ids,
+        tri_manejo_retorno_ids, tri_manejo_eleg_ids, tri_manejo_nao_eleg_ids,
         interv_sa_realiz_ids
       )
   ) |>
