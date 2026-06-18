@@ -1,0 +1,28 @@
+dados_andamento_interv > interv_andamento_df
+interv_exclusao_motivo > interv_desist_motivo_df
+criado interv_sa_finalizada_ids
+sess_a_finalizada > interv_sa_finalizada_n
+criado interv_sa_naoconcordaram_ids
+nao_concordaram_sa > interv_sa_naoconcordaram_n
+criado interv_sa_exclusao_ids
+sa_n_exclusao > interv_sa_exclusao_n
+sa_naoinicia_motivo > interv_sa_naoinicia_motivo_df
+sa_naoinicia_str > interv_sa_naoinicia_str
+criado interv_sf_finalizada_ids
+sess_f_finalizada > interv_sf_finalizada_n
+criado interv_interromperam_ids 
+criado interv_exclusao_ids
+interv_n_exclusao > interv_exclusao_n
+ids_intervencao > interv_sa_tcleaceito_ids
+dados_indicadores_intervencao > interv_timeline_df
+tabela_andamento_interv > interv_timeline_tab
+dados_sessoes_realizadas > interv_realizadas_tab
+dados_sessoes_excluidos > interv_excluidos_tab
+ids_sessoes_excluidos > interv_excluidos_ids
+sa_aguardando > interv_sa_aguardando_n
+ids_sa_realiz > interv_sa_realizada_ids
+ids_sf_realiz > interv_sf_realizada_ids
+ids_interv_interromp > interv_interromp_ids
+ids_interv_ativos > interv_ativo_ids
+
+
