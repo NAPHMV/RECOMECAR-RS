@@ -40,7 +40,7 @@ interv_sessoes_excluidos_ids <- df |>
 
 ## df --------------------------------------------------
 interv_andamento_df <- tibble(
-  sessao = rep(colnames(interv_andamento_tabela), 4),
+  sessao = rep(colnames(interv_sessoes_realiz), 4),
   var = c(rep("Finalizados",7), rep("Excluídos",7), rep("Aguardando sessão", 7), rep("Aguardando agendamento", 7)),
   value = c(
     as.numeric(t(interv_sessoes_realiz)),
