@@ -73,6 +73,62 @@ interv_manejo_enc_n <- interv_manejo_enc |>
   nrow()
 
 
+## Algum atend ===================================================
+interv_manejo_algum_realiz_ids <- df |>
+  filter(
+    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+      (if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
+                atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
+              \(x) x == "Sim e realizou atendimento")) |
+      (if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
+                atend_assist_comp_atend_3,atend_assist_comp_atend_4),
+              \(x) x == "Sim e realizou atendimento")) |
+      (if_any(c(atend_psico_comp_atend_1,atend_psico_comp_atend_2,
+                atend_psico_comp_atend_3,atend_psico_comp_atend_4),
+              \(x) x == "Sim e realizou atendimento"))
+  ) |>
+  distinct(record_id) |>
+  pull()
+interv_manejo_algum_realiz_n <- length(interv_manejo_algum_realiz_ids)
+
+interv_manejo_algum_realiz_str <- glue(
+  "{interv_manejo_algum_realiz_n}/{interv_manejo_enc_n} ({round(100*interv_manejo_algum_realiz_n/interv_manejo_enc_n, 2)} %)"
+)
+
+
+
+## Realizadas ------------------------------------------------
+### n Participantes com algum atendimento realizado
+# interv_manejo_algum_realiz_ids <- df |>
+#   # filter(record_id %in% c(triagem_manejo_eleg_ids, triagem_manejo_nao_eleg_ids)) |>
+#   filter(redcap_event_name != 'Triagem (Arm 1: Participantes)') %>% 
+#   select(record_id, 
+#          enc_sa_superv, enc_sessao_superv,
+#          atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
+#          atend_assist_comp_atend_1, atend_assist_comp_atend_2, atend_assist_comp_atend_3, atend_assist_comp_atend_4) %>% 
+#   mutate(
+#     atend_psicologo = case_when(!is.na(enc_sa_superv) | !is.na(enc_sessao_superv) ~ 'Sim',
+#                                 TRUE ~ 'Não'),
+#     atend_psiquiatra = case_when((atend_psiq_comp_atend_1 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_2 == 'Sim e realizou atendimento' |
+#                                     atend_psiq_comp_atend_3 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
+#                                  TRUE ~ 'Não'),
+#     atend_assit_social = case_when((atend_assist_comp_atend_1 == 'Sim e realizou atendimento' | atend_assist_comp_atend_2 == 'Sim e realizou atendimento' |
+#                                       atend_assist_comp_atend_3 == 'Sim e realizou atendimento' | atend_assist_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
+#                                    TRUE ~ 'Não')
+#   ) %>% 
+#   select(record_id, atend_psicologo, atend_psiquiatra, atend_assit_social) %>% 
+#   filter(atend_psicologo == 'Sim' | atend_psiquiatra == 'Sim' | atend_assit_social == 'Sim') %>% 
+#   rename(ID = record_id, `Psicólogo Supervisor` = atend_psicologo, `Psiquiatra` = atend_psiquiatra, `Assistente Social` = atend_assit_social) |>
+#   pivot_longer(
+#     cols = -ID,
+#     names_to = "Especialista",
+#     values_to = "atendeu"
+#   ) %>% 
+#   filter(atendeu == "Sim") |>
+#   distinct(ID) |>
+#   pull()
+# interv_manejo_algum_realiz_n <- length(interv_manejo_algum_realiz_ids)
+
 
 
 ## Aguardando atendimento ===============================================
@@ -121,26 +177,6 @@ interv_manejo_desist_str <- glue(
 
 
 
-## Algum atend ===================================================
-interv_manejo_algum_realiz_n <- df |>
-  filter(
-    redcap_event_name != "Triagem (Arm 1: Participantes)" &
-      (if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
-                atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
-              \(x) x == "Sim e realizou atendimento")) |
-      (if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
-                atend_assist_comp_atend_3,atend_assist_comp_atend_4),
-              \(x) x == "Sim e realizou atendimento")) |
-      (if_any(c(atend_psico_comp_atend_1,atend_psico_comp_atend_2,
-                atend_psico_comp_atend_3,atend_psico_comp_atend_4),
-              \(x) x == "Sim e realizou atendimento"))
-  ) |>
-  distinct(record_id) |>
-  nrow()
-interv_manejo_algum_realiz_str <- glue(
-  "{interv_manejo_algum_realiz_n}/{interv_manejo_enc_n} ({round(100*interv_manejo_algum_realiz_n/interv_manejo_enc_n, 2)} %)"
-)
-
 
 ## Falsos positivos =====================================================
 interv_manejo_falsos_positivos_n <- df |>
@@ -165,6 +201,7 @@ interv_manejo_falsos_positivos_str <- glue::glue(
 
 ## Alto Risco ===========================================================
 interv_manejo_risco_algum_n <- df |>
+  filter(record_id %in% interv_manejo_algum_realiz_ids) |>
   select(
     record_id, redcap_event_name, redcap_repeat_instance,
     atend_psico_checklist_2, atend_psiq_checklist_2, atend_assist_checklist_2
@@ -181,6 +218,129 @@ interv_manejo_risco_algum_n <- df |>
 interv_manejo_risco_algum_str <- glue(
   "{interv_manejo_risco_algum_n}/{interv_manejo_algum_realiz_n} ({round(100*interv_manejo_risco_algum_n/interv_manejo_algum_realiz_n, 2)} %)"
 )
+
+
+
+## Não Alto Risco =====================================================
+interv_manejo_risco_nao_n <- interv_manejo_algum_realiz_n - interv_manejo_risco_algum_n
+
+
+
+## Elegíveis --------------------------------------------------
+interv_manejo_eleg_ids <- df |>
+  filter(
+    record_id %in% interv_manejo_algum_realiz_ids,
+    redcap_event_name != 'Triagem (Arm 1: Participantes)'
+  ) %>% 
+  filter(
+    enc_sa_superv_apto %in% "1 - Sim" |
+      enc_sessao_superv_apto %in% "1 - Sim"
+  ) |>
+  distinct(record_id) |>
+  pull()
+interv_manejo_eleg_n <- length(interv_manejo_eleg_ids)
+
+## Não elegíveis  ----------------------------------------------
+interv_manejo_nao_eleg_ids <- df |>
+  filter(
+    record_id %in% interv_manejo_algum_realiz_ids,
+    redcap_event_name != 'Triagem (Arm 1: Participantes)'
+  ) %>% 
+  filter(
+    enc_sa_superv_apto %in% "2 - Não" |
+      enc_sessao_superv_apto %in% "2 - Não"
+  ) |>
+  distinct(record_id) |>
+  pull()
+interv_manejo_nao_eleg_n <- length(interv_manejo_nao_eleg_ids)
+
+
+## Motivo encaminhamento ---------------------------------------
+interv_manejo_motivo <- df |>
+  filter(
+    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+      record_id %in% interv_manejo_algum_realiz_ids
+  ) |>
+  group_by(record_id, redcap_event_name) |>
+  filter(
+    if_any(c(enc_sa_superv, enc_sa_atend_ind, enc_sessao_superv, enc_sessao_atend_ind),
+           \(x) x == "Sim")
+  ) |>
+  summarise(
+    Motivo = case_when(
+      phq9_perg_9 != "Nenhuma vez" &
+        !is.na(phq9_perg_9) ~ "PHQ-9",
+      TRUE              ~ "Outro motivo"
+    )
+  ) |>
+  ungroup() |>
+  with(rstatix::freq_table(Motivo)) |>
+  arrange(group)
+
+interv_manejo_motivo_str <- interv_manejo_motivo |>
+  mutate(linha = glue("{group} = {n}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
+
+
+
+## Tipo do encaminhamento ================================================
+interv_manejo_tipo_tabela <- df |>
+  filter(
+    if_any(
+      c(enc_sa_atend_ind_ql___1, enc_sa_atend_ind_ql___2,
+        enc_sa_atend_ind_ql___3, enc_sa_atend_ind_ql___4,
+        enc_sessao_atend_ind_ql___1, enc_sessao_atend_ind_ql___2,
+        enc_sessao_atend_ind_ql___3, enc_sessao_atend_ind_ql___4), 
+      \(x) x %in% "Checked")
+  ) |>
+  mutate(
+    atend_psi = case_when(
+      enc_sa_atend_ind_ql___1 == "Checked" |
+        enc_sessao_atend_ind_ql___1 == "Checked" ~ "Sim",
+      TRUE ~ "Não"),
+    atend_psiq = case_when(
+      enc_sa_atend_ind_ql___2 == "Checked" |
+        enc_sessao_atend_ind_ql___2 == "Checked" ~ "Sim",
+      TRUE ~ "Não"),
+    atend_assist = case_when(
+      enc_sa_atend_ind_ql___3 == "Checked" |
+        enc_sessao_atend_ind_ql___3 == "Checked" ~ "Sim",
+      TRUE ~ "Não")
+  ) |>
+  select(
+    ID = record_id,
+    `Psicólogo Supervisor` = atend_psi, 
+    `Psiquiatra`        = atend_psiq, 
+    `Assistente Social` = atend_assist
+  ) |>
+  pivot_longer(
+    cols = -ID,
+    names_to = "Especialista",
+    values_to = "atendeu"
+  ) %>% 
+  filter(atendeu == "Sim") %>% 
+  summarise(
+    n_observado = n_distinct(ID),
+    .by = Especialista
+  ) %>% 
+  mutate(
+    perc = (n_observado / sum(n_observado, na.rm = TRUE)) * 100,
+    `n (%)` = sprintf(
+      "%d (%.1f%%)",
+      n_observado,
+      perc
+    )
+  ) %>% 
+  select(Especialista, `n (%)`) 
+
+interv_manejo_tipo_str <- interv_manejo_tipo_tabela |>
+  arrange(`n (%)`) |>
+  mutate(linha = glue("{Especialista} = {`n (%)`}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
 
 
 ## Tabela final =========================================================
