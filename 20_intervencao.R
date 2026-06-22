@@ -169,24 +169,59 @@ interv_sa_realiz_n <- length(interv_sa_realiz_ids)
 #   pull()
 # 
 # interv_sa_exclusao_n <- length(interv_sa_exclusao_ids)
-
-interv_sa_exclusao_ids <- df |>
-  filter(record_id %in% interv_sa_realiz_ids) |>
-  anti_join(
-    df |>
-      filter(redcap_event_name == "Sessao 1 (Arm 1: Participantes)"  &
-               !is.na(gad7_perg_1)) |>
-      select(record_id),
-    by = "record_id"
-  ) |>
+interv_sa_desist_ids <- df |>
   filter(
     redcap_event_name == "Desfecho (Arm 1: Participantes)",
-    desfecho_participante_interv == "Retirado"
+    desfecho_participante_interv == "Retirado",
+    desfecho_participante_motivo_interv == "Desistência"
   ) |>
   distinct(record_id) |>
   pull()
+interv_sa_desist_n <- length(interv_sa_desist_ids)
 
+# interv_sa_exclusao_ids <- df |>
+#   filter(
+#     !record_id %in% (interv_andamento_df |> 
+#       filter(sessao_1_realizada == 1) |>
+#       distinct(record_id) |>
+#       pull()),
+#     redcap_event_name == "Desfecho (Arm 1: Participantes)",
+#     desfecho_participante_interv == "Retirado",
+#     desfecho_participante_motivo_interv == "Critério de exclusão"
+#   ) |>
+#   distinct(record_id) |>
+#   pull()
+interv_sa_exclusao_ids <- df |>
+  filter(
+    record_id %in% interv_sa_realiz_ids &
+      !record_id %in% (
+        interv_andamento_df |> 
+                filter(sessao_1_realizada == 1) |>
+                distinct(record_id) |>
+                pull()
+      )
+    ) |>
+  filter(
+    redcap_event_name == "Desfecho (Arm 1: Participantes)",
+    desfecho_participante_interv == "Retirado"#,
+    # desfecho_participante_motivo_interv == "Critério de exclusão"
+  ) |>
+  distinct(record_id) |>
+  pull()
 interv_sa_exclusao_n <- length(interv_sa_exclusao_ids)
+
+interv_sa_perda_ids <- df |>
+  filter(
+    !record_id %in% (interv_andamento_df |> 
+                       filter(sessao_1_realizada == 1) |>
+                       distinct(record_id) |>
+                       pull()),
+    redcap_event_name == "Desfecho (Arm 1: Participantes)",
+    desfecho_participante_interv == "Retirado",
+    desfecho_participante_motivo_interv == "Perda de acompanhamento"
+  ) |>
+  distinct(record_id) |>
+  pull()
 
 interv_sa_exclusao_str <- df |>
   filter(record_id %in% interv_sa_realiz_ids) |>

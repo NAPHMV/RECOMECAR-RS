@@ -246,7 +246,7 @@ tri_manejo_risco_str <- glue(
 
 
 ## Não Alto Risco ==============================================
-
+tri_manejo_risco_nao_n <- tri_manejo_algum_realiz_n - tri_manejo_risco_algum_n
 
 
 
@@ -300,7 +300,8 @@ tri_manejo_motivo <- df |>
   group_by(record_id) |>
   summarise(
     Motivo = case_when(
-      score_phq_9 >= 10 ~ "PHQ-9 ≥ 10",
+      phq9_perg_9 != "Nenhuma vez" &
+        !is.na(phq9_perg_9) ~ "PHQ-9",
       TRUE              ~ "Outro motivo"
     )
   ) |>
@@ -396,6 +397,8 @@ tri_manejo_tipo_str <- tri_manejo_tipo_tabela |>
   mutate(linha = glue("{Especialista} = {`n (%)`}")) |>
   pull(linha) |>
   paste(collapse = "\n")
+
+
 
 
 ## Tabela final ================================================================

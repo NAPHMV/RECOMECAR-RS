@@ -87,7 +87,7 @@ tri_exclusoes_str <- tri_exclusoes |>
   paste(collapse = "\n")
 
 
-
+# Manejo ======================================================================
 ## Elegíveis ======================================================
 tri_manejo_eleg_ids <- df |>
   filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
