@@ -240,6 +240,7 @@ interv_manejo_eleg_ids <- df |>
   pull()
 interv_manejo_eleg_n <- length(interv_manejo_eleg_ids)
 
+
 ## Não elegíveis  ----------------------------------------------
 interv_manejo_nao_eleg_ids <- df |>
   filter(

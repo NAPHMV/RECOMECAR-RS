@@ -337,7 +337,7 @@ interv_sa_aguardando_ids <- df |>
   filter(
     redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
     !record_id %in% interv_sa_realiz_ids,
-    if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
+    # if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
     if_any(tentativa_agendar_sessao_1:tentativa_agendar_sessao_6, \(x) x %in% "Sim")
   ) |>
   rowwise() |>
