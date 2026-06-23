@@ -14,11 +14,11 @@ processa_sessao <- function(df, ids, event, prefixo) {
       across(c(desc_dta_sessao, data_reagend_sessao_1_1, data_reagend_sessao_1_2, data_reagend_sessao_1_3),
              \(x) as.character(as.Date(x))),
       "{prefixo}_data"               := case_when(
-        data[[paste0(prefixo, "_realizada")]] == 1L ~ max(
+        .data[[paste0(prefixo, "_realizada")]] == 1L ~ max(
           c(desc_dta_sessao, data_reagend_sessao_1_1, data_reagend_sessao_1_2, data_reagend_sessao_1_3),
           na.rm = TRUE
         ),
-        data[[paste0(prefixo, "_realizada")]] == 0L ~ NA
+        .data[[paste0(prefixo, "_realizada")]] == 0L ~ NA
       ),
       "motivo_desistencia_{prefixo}" := coalesce(desist_motivo_sessao_1, desist_motivo_reagend_sessao_1_2, desist_motivo_reagend_sessao_1_3),
       "desistencia_{prefixo}"        := as.integer(!is.na(.data[[paste0("motivo_desistencia_", prefixo)]]))
