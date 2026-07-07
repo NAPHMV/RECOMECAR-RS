@@ -1,7 +1,10 @@
 # Dados Geral ==================================================================
 ## Elegível --------------------------------------------------
 seg_particip_sf_elegi_ids <- df |> 
-  filter(desfecho_participante_interv == "Completou a participação") |>
+  filter(
+    record_id %in% interv_sf_realiz_ids,
+    desfecho_participante_interv == "Completou a participação"
+  ) |>
   distinct(record_id) |>
   pull()
 
@@ -11,6 +14,7 @@ seg_particip_sf_elegi <- length(seg_particip_sf_elegi_ids)
 ## Exclusão -------------------------------------------------
 seg_particip_sf_3m_exclusao_ids <- df |>
   filter(
+    record_id %in% interv_sf_realiz_ids,
     desfecho_participante_motivo_seg_3m %in% 
       c("Óbito", "Critério de exclusão")
   ) |>
@@ -19,6 +23,7 @@ seg_particip_sf_3m_exclusao_ids <- df |>
 
 seg_particip_sf_6m_exclusao_ids <- df |>
   filter(
+    record_id %in% interv_sf_realiz_ids,
     desfecho_participante_motivo_seg_6m %in% 
       c("Óbito", "Critério de exclusão")
   ) |>
@@ -30,6 +35,7 @@ seg_particip_sf_6m_exclusao_ids <- df |>
 ## Realizado --------------------------------------------------
 seg_particip_sf_3m_realizados_ids <- df |>
   filter(
+    record_id %in% interv_sf_realiz_ids &
     redcap_event_name == "Seguimento 3m (Arm 1: Participantes)" &
       !is.na(whodas_q1) &
       !record_id %in% seg_particip_sf_3m_exclusao_ids) |>
@@ -39,6 +45,7 @@ seg_particip_sf_3m_realizados <- length(seg_particip_sf_3m_realizados_ids)
 
 seg_particip_sf_6m_realizados_ids <- df |>
   filter(
+    record_id %in% interv_sf_realiz_ids &
     redcap_event_name == "Seguimento 6m (Arm 1: Participantes)" &
       !is.na(whodas_q1) &
       !record_id %in% seg_particip_sf_6m_exclusao_ids) |>
