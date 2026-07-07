@@ -1,9 +1,7 @@
 # Dados Geral ==================================================================
 interv_desist_ids <- df |>
   filter(
-    desfecho_participante_motivo_interv %in% c(
-      "Perda de acompanhamento", "Óbito", "Critério de exclusão"
-    )
+    desfecho_participante_motivo_interv %in% c("Desistência")
   ) |>
   distinct(record_id) |>
   pull()
