@@ -149,7 +149,8 @@ seg_particip_6m_passoujanela_ids <- interv_andamento_df |>
 seg_particip_6m_passoujanela <- length(seg_particip_6m_passoujanela_ids)
 
 
-## Dataframe geral --------------------------------------------
+
+## Dataframe geral andamento --------------------------------------------
 dados_andamento_seg_particip <- data.frame(
   etapa = rep(c("3 meses", "6 meses"), 4),
   var = c(
@@ -173,6 +174,59 @@ dados_andamento_seg_particip <- data.frame(
       "Realizados"),
     value = if_else(is.na(value), 0, value)
   )
+
+# Dados desfecho ===============================================================
+## Perdas ----------------------------------------------------
+seg_particip_3m_perda_ids <- df |>
+  filter(
+    desfecho_participante_motivo_seg_3m %in%
+      c("Perda de acompanhamento", "Óbito", "Critério de exclusão")
+  ) |>
+  distinct(record_id) |> pull()
+seg_particip_3m_perda_n <- length(seg_particip_3m_perda_ids)
+
+seg_particip_6m_perda_ids <- df |>
+  filter(
+    desfecho_participante_motivo_seg_6m %in%
+      c("Perda de acompanhamento", "Óbito", "Critério de exclusão")
+  ) |>
+  distinct(record_id) |> pull()
+seg_particip_6m_perda_n <- length(seg_particip_6m_perda_ids)
+
+
+## Desistências ----------------------------------------------
+seg_particip_3m_desist_ids <- df |>
+  filter(
+    desfecho_participante_motivo_seg_3m %in% c("Desistência")
+  ) |>
+  distinct(record_id) |> pull()
+seg_particip_3m_desist_n <- length(seg_particip_3m_desist_ids)
+
+seg_particip_6m_desist_ids <- df |>
+  filter(
+    desfecho_participante_motivo_seg_6m %in% c("Desistência")
+  ) |>
+  distinct(record_id) |> pull()
+seg_particip_6m_desist_n <- length(seg_particip_6m_desist_ids)
+
+## Dataframe -------------------------------------------------
+dados_seg_particip_desfecho <- df |>
+  distinct(record_id) |>
+  mutate(
+    `3 meses` = case_when(
+      record_id %in% seg_particip_3m_perda_ids      ~ "Perda",
+      record_id %in% seg_particip_3m_desist_ids     ~ "Desistência",
+      record_id %in% seg_particip_3m_realizados_ids ~ "Realizado",
+      TRUE ~ NA
+    ),
+    `6 meses` = case_when(
+      record_id %in% seg_particip_6m_perda_ids      ~ "Perda",
+      record_id %in% seg_particip_6m_desist_ids     ~ "Desistência",
+      record_id %in% seg_particip_6m_realizados_ids ~ "Realizado",
+      TRUE ~ NA
+    )
+  ) |>
+  filter(!is.na(`3 meses`) | !is.na(`6 meses`))
 
 
 # Tabelas ======================================================================
