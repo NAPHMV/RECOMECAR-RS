@@ -304,7 +304,7 @@ interv_manejo_tipo_tabela <- df |>
       TRUE ~ NA),
     atend_assist = case_when(
       atend_assist_checklist_1 == "Sim" ~ "Sim",
-      !is.na(assist_psico_checklist_1)  ~ "Não",
+      !is.na(atend_assist_checklist_1)  ~ "Não",
       TRUE ~ NA)
   ) |>
   select(
