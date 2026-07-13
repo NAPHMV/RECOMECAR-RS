@@ -468,8 +468,32 @@ df |>
   with(rstatix::freq_table(psychlops_q6_1_sessao_final))
 
 
-# Geral ================================================================
-## Interromperam  -------------------------------------------
+# Interromperam ================================================================
+## Geral ----------------------------------------------------------------
+interv_interromperam_geral_ids <- df |>
+  filter(
+    record_id %in% interv_sa_realiz_ids &
+    redcap_event_name == "Desfecho (Arm 1: Participantes)" &
+    desfecho_participante_interv == "Retirado"
+  ) |>
+  distinct(record_id) |>
+  pull()
+interv_interromperam_geral_n <- length(interv_interromperam_geral_ids)
+
+interv_interromperam_geral_str <- df |>
+  filter(
+    record_id %in% interv_sa_realiz_ids &
+    redcap_event_name == "Desfecho (Arm 1: Participantes)" &
+    desfecho_participante_interv == "Retirado"
+  ) |>
+  with(rstatix::freq_table(desfecho_participante_motivo_interv)) |>
+  arrange(group) |>
+  mutate(linha = glue("{group} = {n}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
+
+## Sessão 1-F  -----------------------------------------------
 # interv_interromperam_ids <- df |>
 #   filter(redcap_event_name == "Agendamento (Arm 1: Participantes)") |>
 #   # slice_max(redcap, by = "record_id")
@@ -494,7 +518,6 @@ interv_interromperam_ids <- df |>
   ) |>
   distinct(record_id) |>
   pull()
-
 interv_interromperam_n <- length(interv_interromperam_ids)
 
 interv_interromperam_str <- df |>
@@ -515,8 +538,6 @@ interv_interromperam_str <- df |>
   mutate(linha = glue("{group} = {n}")) |>
   pull(linha) |>
   paste(collapse = "\n")
-
-
 
 # interv_n_exclusao <- df |>
 #   # group_by(redcap_event_name) |>
