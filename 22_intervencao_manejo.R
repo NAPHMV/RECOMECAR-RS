@@ -1,5 +1,6 @@
 # Intervenção ==================================================================
 ## Encaminhados =========================================================
+#### Sessões -------------------------------------------------
 interv_manejo_sa_enc <- df |>
   filter(
     redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
@@ -49,6 +50,7 @@ interv_manejo_sf_enc <- df |>
   ) |>
   select(record_id, redcap_event_name, encaminhado = enc_sessao_atend_ind)
 
+### Geral ----------------------------------------------------
 interv_manejo_enc <- df |>
   filter(
     redcap_event_name != "Triagem (Arm 1: Participantes)" &
@@ -84,14 +86,14 @@ interv_manejo_enc_n <- interv_manejo_enc |>
 interv_manejo_algum_realiz_ids <- df |>
   filter(
     redcap_event_name != "Triagem (Arm 1: Participantes)" &
-      (if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
-                atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
+      (if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2,
+                atend_psiq_comp_atend_3, atend_psiq_comp_atend_4),
               \(x) x == "Sim e realizou atendimento")) |
-      (if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
-                atend_assist_comp_atend_3,atend_assist_comp_atend_4),
+      (if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2,
+                atend_assist_comp_atend_3, atend_assist_comp_atend_4),
               \(x) x == "Sim e realizou atendimento")) |
-      (if_any(c(atend_psico_comp_atend_1,atend_psico_comp_atend_2,
-                atend_psico_comp_atend_3,atend_psico_comp_atend_4),
+      (if_any(c(atend_psico_comp_atend_1, atend_psico_comp_atend_2,
+                atend_psico_comp_atend_3, atend_psico_comp_atend_4),
               \(x) x == "Sim e realizou atendimento"))
   ) |>
   distinct(record_id) |>
@@ -141,6 +143,8 @@ interv_manejo_algum_realiz_str <- glue(
 ## Aguardando atendimento ===============================================
 interv_manejo_aguard_atend_n <- df |>
   filter(
+    (record_id %in% interv_manejo_enc_ids &
+     !record_id %in% interv_manejo_algum_realiz_ids) |
     enc_sessao_superv_apto == "3 - Aguardando atendimento especializado" |
       enc_sa_superv_apto == "3 - Aguardando atendimento especializado") |>
   distinct(record_id) |>
@@ -155,14 +159,14 @@ interv_manejo_aguard_atend_str <- glue::glue(
 interv_manejo_retorno_n <- df |>
   filter(
     redcap_event_name != "Triagem (Arm 1: Participantes)" &
-      (if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
-                atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
+      (if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2,
+                atend_psiq_comp_atend_3, atend_psiq_comp_atend_4),
               \(x) x == "Não atendeu")) |
-      (if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
-                atend_assist_comp_atend_3,atend_assist_comp_atend_4),
+      (if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2,
+                atend_assist_comp_atend_3, atend_assist_comp_atend_4),
               \(x) x == "Não atendeu")) |
-      (if_any(c(atend_psico_comp_atend_1,atend_psico_comp_atend_2,
-                atend_psico_comp_atend_3,atend_psico_comp_atend_4),
+      (if_any(c(atend_psico_comp_atend_1, atend_psico_comp_atend_2,
+                atend_psico_comp_atend_3, atend_psico_comp_atend_4),
               \(x) x == "Não atendeu"))
   ) |>
   distinct(record_id) |>
