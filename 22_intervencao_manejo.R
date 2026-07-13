@@ -49,18 +49,25 @@ interv_manejo_sf_enc <- df |>
   ) |>
   select(record_id, redcap_event_name, encaminhado = enc_sessao_atend_ind)
 
+interv_manejo_enc <- df |>
+  filter(
+    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+    (!is.na(atend_psico_dados) | !is.na(atend_psqi_dados) | !is.na(atend_assist_dados))
+  ) |>
+  select(record_id)
+# interv_manejo_enc <- bind_rows(
+#   interv_manejo_sa_enc, interv_manejo_s1_enc, interv_manejo_s2_enc, interv_manejo_s3_enc, interv_manejo_s4_enc,
+#   interv_manejo_s5_enc, interv_manejo_sf_enc
+# )
+interv_manejo_enc_ids <- interv_manejo_enc$record_id
 
-interv_manejo_enc <- bind_rows(
-  interv_manejo_sa_enc, interv_manejo_s1_enc, interv_manejo_s2_enc, interv_manejo_s3_enc, interv_manejo_s4_enc,
-  interv_manejo_s5_enc, interv_manejo_sf_enc
-)
 
 interv_manejo_algum_enc_n <- interv_manejo_enc |>
   # pivot_wider(id_cols = "record_id", names_from = "redcap_event_name", values_from = "encaminhado") |>
   # filter(if_any(`Sessao de apresentação (Arm 1: Participantes)`:`Sessao final (Arm 1: Participantes)`, 
   #               ~ . == "Sim")) |>
   # distinct(record_id) |>
-  filter(encaminhado == "Sim") |>
+  # filter(encaminhado == "Sim") |>
   distinct(record_id) |>
   nrow()
 
@@ -69,7 +76,7 @@ interv_manejo_enc_n <- interv_manejo_enc |>
   # filter(if_any(`Sessao de apresentação (Arm 1: Participantes)`:`Sessao final (Arm 1: Participantes)`, 
   #               ~ . == "Sim")) |>
   # distinct(record_id) |>
-  filter(encaminhado == "Sim") |>
+  # filter(encaminhado == "Sim") |>
   nrow()
 
 
@@ -288,6 +295,7 @@ interv_manejo_motivo_str <- interv_manejo_motivo |>
 
 ## Tipo do encaminhamento ================================================
 interv_manejo_tipo_df <- df |>
+  filter(redcap_event_name != "Triagem (Arm 1: Participantes)") |>
   filter(
     if_any(
       c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1), 

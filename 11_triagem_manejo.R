@@ -83,6 +83,7 @@ tri_manejo_algum_realiz_ids <- df |>
   mutate(
     atend_psicologo = case_when(!is.na(ev_manejo_superv) ~ 'Sim',
                                 TRUE ~ 'Não'),
+    
     atend_psiquiatra = case_when((atend_psiq_comp_atend_1 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_2 == 'Sim e realizou atendimento' |
                                     atend_psiq_comp_atend_3 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
                                  TRUE ~ 'Não'),
