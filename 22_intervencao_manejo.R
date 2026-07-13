@@ -290,35 +290,32 @@ interv_manejo_motivo_str <- interv_manejo_motivo |>
 interv_manejo_tipo_tabela <- df |>
   filter(
     if_any(
-      c(enc_sa_atend_ind_ql___1, enc_sa_atend_ind_ql___2,
-        enc_sa_atend_ind_ql___3, enc_sa_atend_ind_ql___4,
-        enc_sessao_atend_ind_ql___1, enc_sessao_atend_ind_ql___2,
-        enc_sessao_atend_ind_ql___3, enc_sessao_atend_ind_ql___4), 
-      \(x) x %in% "Checked")
+      c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1), 
+      \(x) x %in% "Sim")
   ) |>
   mutate(
     atend_psi = case_when(
-      enc_sa_atend_ind_ql___1 == "Checked" |
-        enc_sessao_atend_ind_ql___1 == "Checked" ~ "Sim",
-      TRUE ~ "Não"),
+      atend_psico_checklist_1 == "Sim" ~ "Sim",
+      !is.na(atend_psico_checklist_1)  ~ "Não",
+      TRUE ~ NA),
     atend_psiq = case_when(
-      enc_sa_atend_ind_ql___2 == "Checked" |
-        enc_sessao_atend_ind_ql___2 == "Checked" ~ "Sim",
-      TRUE ~ "Não"),
+      atend_psiq_checklist_1 == "Sim" ~ "Sim",
+      !is.na(atend_psiq_checklist_1)  ~ "Não",
+      TRUE ~ NA),
     atend_assist = case_when(
-      enc_sa_atend_ind_ql___3 == "Checked" |
-        enc_sessao_atend_ind_ql___3 == "Checked" ~ "Sim",
-      TRUE ~ "Não")
+      atend_assist_checklist_1 == "Sim" ~ "Sim",
+      !is.na(assist_psico_checklist_1)  ~ "Não",
+      TRUE ~ NA)
   ) |>
   select(
     ID = record_id,
     `Psicólogo Supervisor` = atend_psi, 
-    `Psiquiatra`        = atend_psiq, 
-    `Assistente Social` = atend_assist
+    `Psiquiatra`           = atend_psiq, 
+    `Assistente Social`    = atend_assist
   ) |>
   pivot_longer(
-    cols = -ID,
-    names_to = "Especialista",
+    cols      = -ID,
+    names_to  = "Especialista",
     values_to = "atendeu"
   ) %>% 
   filter(atendeu == "Sim") %>% 
