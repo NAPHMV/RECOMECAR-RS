@@ -287,7 +287,7 @@ interv_manejo_motivo_str <- interv_manejo_motivo |>
 
 
 ## Tipo do encaminhamento ================================================
-interv_manejo_tipo_tabela <- df |>
+interv_manejo_tipo_df <- df |>
   filter(
     if_any(
       c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1), 
@@ -312,7 +312,9 @@ interv_manejo_tipo_tabela <- df |>
     `Psicólogo Supervisor` = atend_psi, 
     `Psiquiatra`           = atend_psiq, 
     `Assistente Social`    = atend_assist
-  ) |>
+  )
+
+interv_manejo_tipo_tabela <- interv_manejo_tipo_df |>
   pivot_longer(
     cols      = -ID,
     names_to  = "Especialista",
@@ -332,6 +334,7 @@ interv_manejo_tipo_tabela <- df |>
     )
   ) %>% 
   select(Especialista, `n (%)`) 
+
 
 interv_manejo_tipo_str <- interv_manejo_tipo_tabela |>
   arrange(`n (%)`) |>
