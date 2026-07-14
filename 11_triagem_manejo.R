@@ -10,12 +10,18 @@
 ## Encaminhamentos --------------------------------------------
 # n de participantes encaminhados para manejo
 # foram encaminhados para manejo
-tri_manejo_enc_ids <- df %>% 
-  filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
-  filter(fez_enc_manejo_superv == "Sim") |> 
+tri_manejo_enc_ids <- df |> 
+  filter(
+    redcap_event_name == 'Triagem (Arm 1: Participantes)' &
+      (fez_enc_manejo_superv == "Sim" |
+         !is.na(atend_psico_dados) |
+         !is.na(atend_psqi_dados) |
+         !is.na(atend_assist_dados))
+  ) |>
   distinct(record_id) |>
   pull()
 tri_manejo_enc_n <- length(tri_manejo_enc_ids)
+
 
 # ## Aguardando atendimento ------------------------------------
 # tri_ids_aguard_atend <- df |>
