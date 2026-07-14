@@ -9,8 +9,6 @@
 ## 
 ## Encaminhamentos --------------------------------------------
 # n de participantes encaminhados para manejo
-
-# Fizeram Manejo ==============================================================
 # foram encaminhados para manejo
 tri_manejo_enc_ids <- df %>% 
   filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
@@ -47,7 +45,6 @@ tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 # )
 # 
 # 
-# ## Aguardando atendimento ====================================
 # tabela_aguard_atendimento <- df |>
 #   filter(redcap_event_name == "Triagem (Arm 1: Participantes)") |>
 #   reframe(
@@ -77,19 +74,22 @@ tri_manejo_algum_realiz_ids <- df |>
   # filter(record_id %in% c(triagem_manejo_eleg_ids, triagem_manejo_nao_eleg_ids)) |>
   filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
   select(record_id, 
-         ev_manejo_superv,
+         ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3,
          atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
          atend_assist_comp_atend_1, atend_assist_comp_atend_2, atend_assist_comp_atend_3, atend_assist_comp_atend_4) %>% 
   mutate(
-    atend_psicologo = case_when(!is.na(ev_manejo_superv) ~ 'Sim',
-                                TRUE ~ 'Não'),
-    
-    atend_psiquiatra = case_when((atend_psiq_comp_atend_1 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_2 == 'Sim e realizou atendimento' |
-                                    atend_psiq_comp_atend_3 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
-                                 TRUE ~ 'Não'),
-    atend_assit_social = case_when((atend_assist_comp_atend_1 == 'Sim e realizou atendimento' | atend_assist_comp_atend_2 == 'Sim e realizou atendimento' |
-                                      atend_assist_comp_atend_3 == 'Sim e realizou atendimento' | atend_assist_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
-                                   TRUE ~ 'Não')
+    atend_psicologo = case_when(
+      if_any(c(ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3),
+             \(x) !is.na(x)) ~ 'Sim',
+      TRUE ~ 'Não'),
+    atend_psiquiatra = case_when(
+      (atend_psiq_comp_atend_1 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_2 == 'Sim e realizou atendimento' |
+         atend_psiq_comp_atend_3 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
+      TRUE ~ 'Não'),
+    atend_assit_social = case_when(
+      (atend_assist_comp_atend_1 == 'Sim e realizou atendimento' | atend_assist_comp_atend_2 == 'Sim e realizou atendimento' |
+         atend_assist_comp_atend_3 == 'Sim e realizou atendimento' | atend_assist_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
+      TRUE ~ 'Não')
   ) %>% 
   select(record_id, atend_psicologo, atend_psiquiatra, atend_assit_social) %>% 
   filter(atend_psicologo == 'Sim' | atend_psiquiatra == 'Sim' | atend_assit_social == 'Sim') %>% 
@@ -152,7 +152,6 @@ tri_manejo_desist_ids <- df |>
   ) |>
   distinct(record_id) |>
   pull()
-
 tri_manejo_desist_n <- length(tri_manejo_desist_ids)
 
 tri_manejo_desist_n <- glue(
@@ -163,20 +162,14 @@ tri_manejo_desist_n <- glue(
 tri_manejo_retorno_ids <- df |>
   filter(
     redcap_event_name == "Triagem (Arm 1: Participantes)" &
-      # (atend_psiq_comp_atend_1 != "Sim e realizou atendimento" &
-      # atend_psiq_comp_atend_2 != "Sim e realizou atendimento" &
-      # atend_psiq_comp_atend_3 != "Sim e realizou atendimento" &
-      # atend_psiq_comp_atend_4 != "Sim e realizou atendimento") |
-      (if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
-                atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
-              \(x) x %in% "Não atendeu") |
-         # (atend_assist_comp_atend_1 != "Sim e realizou atendimento" &
-         #    atend_assist_comp_atend_2 != "Sim e realizou atendimento" &
-         #    atend_assist_comp_atend_3 != "Sim e realizou atendimento" &
-         #    atend_assist_comp_atend_4 != "Sim e realizou atendimento")
-         if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
-                  atend_assist_comp_atend_3,atend_assist_comp_atend_4),
-                \(x) x %in% "Não atendeu")),
+      (
+        if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
+                 atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
+               \(x) x %in% "Não atendeu") |
+          if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
+                   atend_assist_comp_atend_3,atend_assist_comp_atend_4),
+                 \(x) x %in% "Não atendeu")
+      ) 
     # TO-DO: adicionar falta de retorno do atendimento com psicólogo
     # via form Desfecho
   ) |>
@@ -192,23 +185,16 @@ tri_manejo_retorno_str <- glue(
 
 
 ## Aguardando atendimento ----------------------------------
-tri_manejo_aguard_atend_ids <- df |>
+tri_manejo_aguard_atend_ids <- df |> 
   filter(
-    redcap_event_name == "Triagem (Arm 1: Participantes)" &
-      aceita_tcle %in% "Aceito participar do estudo" &
-      fez_enc_manejo_superv %in% "Sim" &
-      # !is.na(gad7_perg_1) &
-      !record_id %in% c(
-        tri_manejo_desist_ids, 
-        tri_manejo_algum_realiz_ids,
-        tri_manejo_retorno_ids, tri_manejo_eleg_ids, tri_manejo_nao_eleg_ids,
-        interv_sa_realiz_ids
-      )
+    record_id %in% tri_manejo_enc_ids &
+    !record_id %in% tri_manejo_algum_realiz_ids &
+      !record_id %in% interv_sa_realiz_ids
   ) |>
   distinct(record_id) |>
   pull()
-
 tri_manejo_aguard_atend_n <- length(tri_manejo_aguard_atend_ids)
+
 
 
 ## Alto Risco ----------------------------------------------
@@ -224,7 +210,6 @@ tri_manejo_risco_algum_ids <- df |>
   ) |>
   distinct(record_id) |>
   pull()
-
 tri_manejo_risco_algum_n <- length(tri_manejo_risco_algum_ids)
 # tri_manejo_risco_algum_n <- glue(
 #   "{tri_manejo_risco_algum_n}/{as.numeric(substr(tri_manejo_algum_realiz_n,1,2))} ({round(100*tri_manejo_risco_algum_n/as.numeric(substr(tri_manejo_algum_realiz_n,1,2)), 2)} %)"
@@ -296,7 +281,7 @@ tri_manejo_falsos_positivos_str <- glue::glue(
 tri_manejo_motivo <- df |>
   filter(
     redcap_event_name == "Triagem (Arm 1: Participantes)" &
-      record_id %in% tri_manejo_algum_realiz_ids
+      record_id %in% tri_manejo_enc_ids
   ) |>
   group_by(record_id) |>
   summarise(
@@ -345,22 +330,28 @@ tri_manejo_motivo_str <- tri_manejo_motivo |>
 ## Tipo de atendimento =========================================================
 tri_manejo_tipo_tabela <- df %>% 
   filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
-  select(record_id, ev_manejo_superv, 
+  select(record_id, ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3,
          atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
          atend_assist_comp_atend_1, atend_assist_comp_atend_2, atend_assist_comp_atend_3, atend_assist_comp_atend_4) %>% 
   mutate(
-    atend_psicologo = case_when(!is.na(ev_manejo_superv) ~ 'Sim',
-                                TRUE ~ 'Não'),
-    atend_psiquiatra = case_when((atend_psiq_comp_atend_1 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_2 == 'Sim e realizou atendimento' |
-                                    atend_psiq_comp_atend_3 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
-                                 TRUE ~ 'Não'),
-    atend_assit_social = case_when((atend_assist_comp_atend_1 == 'Sim e realizou atendimento' | atend_assist_comp_atend_2 == 'Sim e realizou atendimento' |
-                                      atend_assist_comp_atend_3 == 'Sim e realizou atendimento' | atend_assist_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
-                                   TRUE ~ 'Não')
+    atend_psicologo = case_when(
+      if_any(c(ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3),
+             \(x) !is.na(x)) ~ 'Sim',
+      TRUE ~ 'Não'),
+    atend_psiquiatra = case_when(
+      if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, 
+               atend_psiq_comp_atend_3, atend_psiq_comp_atend_4),
+             \(x) x == 'Sim e realizou atendimento') ~ 'Sim',
+      TRUE ~ 'Não'),
+    atend_assist_social = case_when(
+      if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2, 
+               atend_assist_comp_atend_3, atend_assist_comp_atend_4),
+             \(x) x == 'Sim e realizou atendimento') ~ 'Sim',
+      TRUE ~ 'Não')
   ) %>% 
-  select(record_id, atend_psicologo, atend_psiquiatra, atend_assit_social) %>% 
-  filter(atend_psicologo == 'Sim' | atend_psiquiatra == 'Sim' | atend_assit_social == 'Sim') %>% 
-  rename(ID = record_id, `Psicólogo Supervisor` = atend_psicologo, `Psiquiatra` = atend_psiquiatra, `Assistente Social` = atend_assit_social) |>
+  select(record_id, atend_psicologo, atend_psiquiatra, atend_assist_social) %>% 
+  filter(atend_psicologo == 'Sim' | atend_psiquiatra == 'Sim' | atend_assist_social == 'Sim') %>% 
+  rename(ID = record_id, `Psicólogo Supervisor` = atend_psicologo, `Psiquiatra` = atend_psiquiatra, `Assistente Social` = atend_assist_social) |>
   pivot_longer(
     cols = -ID,
     names_to = "Especialista",
