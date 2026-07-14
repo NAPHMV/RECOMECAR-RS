@@ -85,7 +85,6 @@ interv_manejo_algum_enc_n <- length(interv_manejo_algum_enc_ids)
 ## Algum atend ===================================================
 # interv_manejo_algum_realiz_ids <- df |>
 #   filter(record_id %in% interv_manejo_algum_enc_ids) |>
-  
 interv_manejo_algum_realiz_ids <- df |>
     filter(
       redcap_event_name != "Triagem (Arm 1: Participantes)" &
