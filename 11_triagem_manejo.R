@@ -89,12 +89,14 @@ tri_manejo_algum_realiz_ids <- df |>
              \(x) !is.na(x)) ~ 'Sim',
       TRUE ~ 'Não'),
     atend_psiquiatra = case_when(
-      (atend_psiq_comp_atend_1 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_2 == 'Sim e realizou atendimento' |
-         atend_psiq_comp_atend_3 == 'Sim e realizou atendimento' | atend_psiq_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
+      if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, 
+               atend_psiq_comp_atend_3, atend_psiq_comp_atend_4), 
+             \(x) x == 'Sim e realizou atendimento') ~ "Sim",
       TRUE ~ 'Não'),
     atend_assit_social = case_when(
-      (atend_assist_comp_atend_1 == 'Sim e realizou atendimento' | atend_assist_comp_atend_2 == 'Sim e realizou atendimento' |
-         atend_assist_comp_atend_3 == 'Sim e realizou atendimento' | atend_assist_comp_atend_4 == 'Sim e realizou atendimento') ~ 'Sim',
+      if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2, 
+               atend_assist_comp_atend_3, atend_assist_comp_atend_4), 
+             \(x) x == 'Sim e realizou atendimento') ~ "Sim",
       TRUE ~ 'Não')
   ) %>% 
   select(record_id, atend_psicologo, atend_psiquiatra, atend_assit_social) %>% 
@@ -154,6 +156,7 @@ tri_manejo_realiz_n <- df |>
 tri_manejo_desist_ids <- df |>
   filter(
     # (fez_enc_manejo_superv == "Sim" & is.na(ev_manejo_superv)) |
+    redcap_event_name == "Triagem (Arm 1: Participantes)" &
     (atend_psiq_checklist_1 == "Não" | atend_assist_checklist_1 == "Não")
   ) |>
   distinct(record_id) |>
@@ -238,9 +241,19 @@ tri_manejo_risco_str <- glue(
 
 
 ## Não Alto Risco ==============================================
-tri_manejo_risco_nao_n <- tri_manejo_algum_realiz_n - tri_manejo_risco_algum_n
-
-
+tri_manejo_risco_nao_ids <- df |>
+  select(
+    record_id, redcap_event_name, redcap_repeat_instance,
+    atend_psiq_checklist_2, atend_assist_checklist_2
+  ) |>
+  filter(redcap_event_name == "Triagem (Arm 1: Participantes)") |>
+  filter(
+    atend_psiq_checklist_2 == "Não" |
+      atend_assist_checklist_2 == "Não"
+  ) |>
+  distinct(record_id) |>
+  pull()
+tri_manejo_risco_nao_n <- length(tri_manejo_risco_nao_ids)
 
 
 ## Falsos positivos ==========================================
