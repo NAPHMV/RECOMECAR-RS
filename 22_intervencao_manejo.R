@@ -155,14 +155,16 @@ interv_manejo_algum_realiz_str <- glue(
 
 
 ## Aguardando atendimento ===============================================
-interv_manejo_aguard_atend_n <- df |>
+interv_manejo_aguard_atend_ids <- df |>
   filter(
-    (record_id %in% interv_manejo_algum_enc_ids &
-     !record_id %in% interv_manejo_algum_realiz_ids) |
-    enc_sessao_superv_apto == "3 - Aguardando atendimento especializado" |
-      enc_sa_superv_apto == "3 - Aguardando atendimento especializado") |>
+    record_id %in% interv_manejo_algum_enc_ids &
+      (enc_sessao_superv_apto == "3 - Aguardando atendimento especializado" |
+         enc_sa_superv_apto == "3 - Aguardando atendimento especializado")
+  ) |>
   distinct(record_id) |>
   nrow()
+
+interv_manejo_aguard_atend_n <- length(interv_manejo_aguard_atend_ids) 
 interv_manejo_aguard_atend_str <- glue::glue(
   "{interv_manejo_aguard_atend_n}/{interv_manejo_enc_n} ({round(100*interv_manejo_aguard_atend_n/interv_manejo_enc_n, 2)} %)"
 )
