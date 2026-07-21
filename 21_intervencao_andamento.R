@@ -12,6 +12,35 @@ interv_sessoes_realiz <- interv_andamento_df |>
     `Sessão Final` = sum(sessao_final_realizada, na.rm = TRUE)
   )
 
+interv_s1_realiz_ids <- interv_andamento_df |>
+  filter(sessao_1_realizada == 1) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s2_realiz_ids <- interv_andamento_df |>
+  filter(sessao_2_realizada == 1) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s3_realiz_ids <- interv_andamento_df |>
+  filter(sessao_3_realizada == 1) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s4_realiz_ids <- interv_andamento_df |>
+  filter(sessao_4_realizada == 1) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s5_realiz_ids <- interv_andamento_df |>
+  filter(sessao_5_realizada == 1) |>
+  distinct(record_id) |>
+  pull()
+
+interv_sf_realiz_ids <- interv_andamento_df |>
+  filter(sessao_final_realizada == 1) |>
+  distinct(record_id) |>
+  pull()
 
 ## Excluídos (antigo) --------------------------------------------------
 interv_sessoes_excluidos <- df |>
