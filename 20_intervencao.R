@@ -252,8 +252,7 @@ interv_sa_exclusao_str <- df |>
 interv_sa_perda_ids <- df |>
   filter(
     redcap_event_name %in% "Sessao de apresentação (Arm 1: Participantes)" &
-      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sa_motivo) |
-         enc_sa_superv_apto == "2 - Não")
+      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sa_motivo))
   ) |>
   distinct(record_id) |>
   pull()
