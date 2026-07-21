@@ -248,6 +248,18 @@ interv_sa_exclusao_str <- df |>
   paste(collapse = "\n")
   
 
+## Perdas -------------------------------------------------
+interv_sa_perda_ids <- df |>
+  filter(
+    redcap_event_name %in% "Sessao de apresentação (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sa_motivo) |
+         enc_sa_superv_apto == "2 - Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
+
+interv_sa_perda_n <- length(interv_sa_perda_ids)
+
 
 
 ## Não iniciam -------------------------------------------
@@ -376,6 +388,18 @@ interv_s1_aguard_agend_n <- length(interv_s1_aguard_agend_ids)
 s1_aguardando_ids <- interv_aguardando_sessao(sessao = 1)
 s1_aguardando_n <- length(s1_aguardando_ids)
 
+## Perdas ------------------------------------------------------
+interv_s1_perda_ids <- df |>
+  filter(
+    redcap_event_name %in% "Sessao 1 (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sessao_motivo) |
+         enc_sessao_superv_apto == "2 - Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s1_perda_n <- length(interv_s1_perda_ids)
+
 
 # Sessão 2 =====================================================================
 ## Aguardando agendamento --------------------------------------
@@ -385,6 +409,19 @@ interv_s2_aguard_agend_n <- length(interv_s2_aguard_agend_ids)
 ## Aguardando sessão -------------------------------------------
 s2_aguardando_ids <- interv_aguardando_sessao(sessao = 2)
 s2_aguardando_n <- length(s2_aguardando_ids)
+
+## Perdas ------------------------------------------------------
+interv_s2_perda_ids <- df |>
+  filter(
+    redcap_event_name %in% "Sessao 2 (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sessao_motivo) |
+         enc_sessao_superv_apto == "2 - Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s2_perda_n <- length(interv_s2_perda_ids)
+
 
 
 # Sessão 3 =====================================================================
@@ -396,6 +433,19 @@ interv_s3_aguard_agend_n <- length(interv_s3_aguard_agend_ids)
 s3_aguardando_ids <- interv_aguardando_sessao(sessao = 3)
 s3_aguardando_n <- length(s3_aguardando_ids)
 
+## Perdas ------------------------------------------------------
+interv_s3_perda_ids <- df |>
+  filter(
+    redcap_event_name %in% "Sessao 3 (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sessao_motivo) |
+         enc_sessao_superv_apto == "2 - Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s3_perda_n <- length(interv_s3_perda_ids)
+
+
 
 # Sessão 4 =====================================================================
 ## Aguardando agendamento --------------------------------------
@@ -406,6 +456,19 @@ interv_s4_aguard_agend_n <- length(interv_s4_aguard_agend_ids)
 s4_aguardando_ids <- interv_aguardando_sessao(sessao = 4)
 s4_aguardando_n <- length(s4_aguardando_ids)
 
+## Perdas ------------------------------------------------------
+interv_s4_perda_ids <- df |>
+  filter(
+    redcap_event_name %in% "Sessao 4 (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sessao_motivo) |
+         enc_sessao_superv_apto == "2 - Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s4_perda_n <- length(interv_s4_perda_ids)
+
+
 
 # Sessão 5 =====================================================================
 ## Aguardando agendamento --------------------------------------
@@ -415,6 +478,18 @@ interv_s5_aguard_agend_n <- length(interv_s5_aguard_agend_ids)
 ## Aguardando sessão -------------------------------------------
 s5_aguardando_ids <- interv_aguardando_sessao(sessao = 5)
 s5_aguardando_n <- length(s5_aguardando_ids)
+
+## Perdas ------------------------------------------------------
+interv_s5_perda_ids <- df |>
+  filter(
+    redcap_event_name %in% "Sessao 5 (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) | !is.na(enc_sessao_motivo) |
+         enc_sessao_superv_apto == "2 - Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
+
+interv_s5_perda_n <- length(interv_s5_perda_ids)
 
 
 
@@ -460,7 +535,16 @@ interv_sf_aguard_agend_n <- length(interv_sf_aguard_agend_ids)
 sf_aguardando_ids <- interv_aguardando_sessao(sessao = "final")
 sf_aguardando_n <- length(sf_aguardando_ids)
 
+## Perdas ------------------------------------------------------
+interv_sf_perda_ids <- df |>
+  filter(
+    redcap_event_name %in% "Sessao final (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) | enc_sessao_superv_apto == "2 - Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
 
+interv_sf_perda_n <- length(interv_sf_perda_ids)
 
 ## PSYCHLOPS -----------------------------------------------
 df |>

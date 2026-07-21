@@ -13,14 +13,14 @@ interv_sessoes_realiz <- interv_andamento_df |>
   )
 
 
-## Excluídos --------------------------------------------------
+## Excluídos (antigo) --------------------------------------------------
 interv_sessoes_excluidos <- df |>
   filter(str_detect(redcap_event_name, "Sessao")) |>
   group_by(record_id, redcap_event_name) |>
   reframe(
     nao_agendou = enc_sa_agend_data == "Não" | enc_sessao_agend_data == "Não",
     nao_elegivel = enc_sa_superv_apto == "2 - Não" | enc_sessao_superv_apto == "Não",
-    excluido = nao_agendou | nao_elegivel,
+    excluido = nao_agendou | nao_elegivel
   ) |>
   group_by(redcap_event_name) |>
   summarise(
@@ -31,8 +31,8 @@ interv_sessoes_excluidos_ids <- df |>
   group_by(record_id, redcap_event_name) |>
   reframe(
     nao_agendou = enc_sa_agend_data == "Não" | enc_sessao_agend_data == "Não",
-    nao_elegivel = enc_sa_superv_apto == "2 - Não" | enc_sessao_superv_apto == "Não",
-    excluido = nao_agendou | nao_elegivel,
+    nao_elegivel = enc_sa_superv_apto == "2 - Não" | enc_sessao_superv_apto == "2 - Não",
+    excluido = nao_agendou | nao_elegivel
   ) |>
   filter(excluido) |>
   select(record_id, redcap_event_name)
@@ -41,10 +41,11 @@ interv_sessoes_excluidos_ids <- df |>
 ## df --------------------------------------------------
 interv_andamento_resumo <- tibble(
   sessao = rep(colnames(interv_sessoes_realiz), 4),
-  var = c(rep("Finalizados",7), rep("Excluídos",7), rep("Aguardando sessão", 7), rep("Aguardando agendamento", 7)),
+  var = c(rep("Finalizados",7), rep("Perdas",7), rep("Aguardando sessão", 7), rep("Aguardando agendamento", 7)),
   value = c(
     as.numeric(t(interv_sessoes_realiz)),
-    as.numeric(interv_sessoes_excluidos$excluidos),
+    c(interv_sa_perda_n, interv_s1_perda_n, interv_s2_perda_n, interv_s3_perda_n,
+      interv_s4_perda_n, interv_s5_perda_n, interv_sf_perda_n),
     c(interv_sa_aguardando_n, s1_aguardando_n, s2_aguardando_n, 
       s3_aguardando_n, s4_aguardando_n, 
       s5_aguardando_n, sf_aguardando_n),
@@ -55,24 +56,24 @@ interv_andamento_resumo <- tibble(
 ) |>
   mutate(
     sessao = fct_relevel(as.factor(sessao), "Sessão A", "Sessão 1", "Sessão 2", "Sessão 3", "Sessão 4", "Sessão 5", "Sessão Final"),
-    var    = fct_relevel(as.factor(var), "Excluídos", "Aguardando agendamento", "Aguardando sessão", "Finalizados")
+    var    = fct_relevel(as.factor(var), "Perdas", "Aguardando agendamento", "Aguardando sessão", "Finalizados")
   )
 
 
 
 ## IDs ativos ----------------------------------------------------------
-interv_interromp_ids <- df |>
-  filter(redcap_event_name == "Agendamento (Arm 1: Participantes)",
-         sessao_agend == "Não") |>
-  pull(record_id)
-
-interv_ativos_ids <- df |>
-  filter(
-    !(record_id %in% c(interv_sf_realiz_ids, interv_interromp_ids)) &
-      (record_id %in% interv_sa_realiz_ids)
-  ) |>
-  distinct(record_id) |>
-  pull(record_id)
+# interv_interromp_ids <- df |>
+#   filter(redcap_event_name == "Agendamento (Arm 1: Participantes)",
+#          sessao_agend == "Não") |>
+#   pull(record_id)
+# 
+# interv_ativos_ids <- df |>
+#   filter(
+#     !(record_id %in% c(interv_sf_realiz_ids, interv_interromp_ids)) &
+#       (record_id %in% interv_sa_realiz_ids)
+#   ) |>
+#   distinct(record_id) |>
+#   pull(record_id)
 
 
 
