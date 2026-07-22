@@ -59,6 +59,34 @@ interv_andamento_df <- interv_andamento_df |>
     by = c('record_id', 'sessao_final_realizada')
   )
 
+# Realizadas ==================================================================
+interv_sa_realiz_ids <- interv_andamento_df |>
+  filter(sessao_A_realizada == 1) |>
+  pull(record_id)
+
+interv_s1_realiz_ids <- interv_andamento_df |>
+  filter(sessao_1_realizada == 1) |>
+  pull(record_id)
+
+interv_s2_realiz_ids <- interv_andamento_df |>
+  filter(sessao_2_realizada == 1) |>
+  pull(record_id)
+
+interv_s3_realiz_ids <- interv_andamento_df |>
+  filter(sessao_3_realizada == 1) |>
+  pull(record_id)
+
+interv_s4_realiz_ids <- interv_andamento_df |>
+  filter(sessao_4_realizada == 1) |>
+  pull(record_id)
+
+interv_s5_realiz_ids <- interv_andamento_df |>
+  filter(sessao_5_realizada == 1) |>
+  pull(record_id)
+
+interv_sf_realiz_ids <- interv_andamento_df |>
+  filter(sessao_final_realizada == 1) |>
+  pull(record_id)
 
 
 # Sessão A =====================================================================
