@@ -2,24 +2,24 @@ interv_aguardando_agendamento <- function(sessao) {
   if (sessao == 1) {
     dados_andamento <- interv_andamento_df |>
       filter(
-        sessao_A_realizada == 1,
-        sessao_1_realizada == 0
+        sessao_A_realizada == 1 &
+          (sessao_1_realizada == 0 | is.na(sessao_1_realizada))
         # if_all(starts_with("desistencia_sessao_"), \(x) x == 0)
       ) |>
       select(record_id) 
   } else if (sessao == 2) {
     dados_andamento <- interv_andamento_df |>
       filter(
-        sessao_1_realizada == 1,
-        sessao_2_realizada == 0
+        sessao_1_realizada == 1 &
+          (sessao_2_realizada == 0 | is.na(sessao_2_realizada))
         # if_all(starts_with("desistencia_sessao_"), \(x) x == 0)
       ) |>
       select(record_id) 
   } else if (sessao == 3) {
     dados_andamento <- interv_andamento_df |>
       filter(
-        sessao_2_realizada == 1,
-        sessao_3_realizada == 0
+        sessao_2_realizada == 1 &
+          (sessao_3_realizada == 0 | is.na(sessao_3_realizada))
         # if_all(starts_with("desistencia_sessao_"), \(x) x == 0)
       ) |>
       select(record_id) 
@@ -27,15 +27,15 @@ interv_aguardando_agendamento <- function(sessao) {
     dados_andamento <- interv_andamento_df |>
       filter(
         sessao_3_realizada == 1,
-        sessao_4_realizada == 0
+        (sessao_4_realizada == 0 | is.na(sessao_4_realizada))
         # if_all(starts_with("desistencia_sessao_"), \(x) x == 0)
       ) |>
       select(record_id) 
   } else if (sessao == 5) {
     dados_andamento <- interv_andamento_df |>
       filter(
-        sessao_5_realizada == 1,
-        sessao_final_realizada == 0
+        sessao_4_realizada == 1 &
+          (sessao_5_realizada == 0 | is.na(sessao_5_realizada))
         # if_all(starts_with("desistencia_sessao_"), \(x) x == 0)
       ) |>
       select(record_id) 
@@ -43,7 +43,7 @@ interv_aguardando_agendamento <- function(sessao) {
     dados_andamento <- interv_andamento_df |>
       filter(
         sessao_5_realizada == 1,
-        sessao_final_realizada == 0
+        (sessao_final_realizada == 0 | is.na(sessao_final_realizada))
         # if_all(starts_with("desistencia_sessao_"), \(x) x == 0)
       ) |>
       select(record_id) 
