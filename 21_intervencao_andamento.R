@@ -70,14 +70,24 @@ interv_sessoes_excluidos_ids <- df |>
 ## df --------------------------------------------------
 interv_andamento_resumo <- tibble(
   sessao = rep(colnames(interv_sessoes_realiz), 4),
-  var = c(rep("Finalizados",7), rep("Perdas",7), rep("Aguardando sessão", 7), rep("Aguardando agendamento", 7)),
+  var = c(
+    rep("Finalizada e elegível",7), 
+    rep("Perda anterior à Sessão",7), rep("Perda posterior à Sessão",7), 
+    rep("Aguardando sessão", 7), rep("Aguardando agendamento", 7)),
   value = c(
+    # Realizada e seguiu
     as.numeric(t(interv_sessoes_realiz)),
-    c(interv_sa_perda_n, interv_s1_perda_n, interv_s2_perda_n, interv_s3_perda_n,
-      interv_s4_perda_n, interv_s5_perda_n, interv_sf_perda_n),
+    # Perda anterior
+    c(interv_sa_perda_ant_n, interv_s1_perda_ant_n, interv_s2_perda_ant_n, interv_s3_perda_ant_n,
+      interv_s4_perda_ant_n, interv_s5_perda_ant_n, interv_sf_perda_ant_n),
+    # Perda posterior
+    c(interv_sa_perda_post_n, interv_s1_perda_post_n, interv_s2_perda_post_n, interv_s3_perda_post_n,
+      interv_s4_perda_post_n, interv_s5_perda_post_n, interv_sf_perda_post_n),
+    # Aguardando sessão
     c(interv_sa_aguardando_n, s1_aguardando_n, s2_aguardando_n, 
       s3_aguardando_n, s4_aguardando_n, 
       s5_aguardando_n, sf_aguardando_n),
+    # Aguardando agendamento
     c(interv_sa_aguard_agend_n, interv_s1_aguard_agend_n, interv_s2_aguard_agend_n, 
       interv_s3_aguard_agend_n, interv_s4_aguard_agend_n, 
       interv_s5_aguard_agend_n, interv_sf_aguard_agend_n)
@@ -85,7 +95,10 @@ interv_andamento_resumo <- tibble(
 ) |>
   mutate(
     sessao = fct_relevel(as.factor(sessao), "Sessão A", "Sessão 1", "Sessão 2", "Sessão 3", "Sessão 4", "Sessão 5", "Sessão Final"),
-    var    = fct_relevel(as.factor(var), "Perdas", "Aguardando agendamento", "Aguardando sessão", "Finalizados")
+    var    = fct_relevel(
+      as.factor(var), 
+      "Perda anterior à Sessão", "Perda posterior à Sessão", 
+      "Aguardando agendamento", "Aguardando sessão", "Finaliza e elegível")
   )
 
 
