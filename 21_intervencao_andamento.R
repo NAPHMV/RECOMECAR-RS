@@ -69,7 +69,7 @@ interv_sessoes_excluidos_ids <- df |>
 
 ## df --------------------------------------------------
 interv_andamento_resumo <- tibble(
-  sessao = rep(colnames(interv_sessoes_realiz), 4),
+  sessao = rep(colnames(interv_sessoes_realiz), 5),
   var = c(
     rep("Finalizada e elegível",7), 
     rep("Perda anterior à Sessão",7), rep("Perda posterior à Sessão",7), 
@@ -98,7 +98,7 @@ interv_andamento_resumo <- tibble(
     var    = fct_relevel(
       as.factor(var), 
       "Perda anterior à Sessão", "Perda posterior à Sessão", 
-      "Aguardando agendamento", "Aguardando sessão", "Finaliza e elegível")
+      "Aguardando agendamento", "Aguardando sessão", "Finalizada e elegível")
   )
 
 
