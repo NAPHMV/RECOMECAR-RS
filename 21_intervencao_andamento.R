@@ -76,7 +76,10 @@ interv_andamento_resumo <- tibble(
     rep("Aguardando sessão", 7), rep("Aguardando agendamento", 7)),
   value = c(
     # Realizada e seguiu
-    as.numeric(t(interv_sessoes_realiz)),
+    # as.numeric(t(interv_sessoes_realiz)),
+    c(interv_sa_realiz_eleg_n, interv_s1_realiz_eleg_n, interv_s2_realiz_eleg_n,
+      interv_s3_realiz_eleg_n, interv_s4_realiz_eleg_n, interv_s5_realiz_eleg_n,
+      interv_sf_realiz_eleg_n),
     # Perda anterior
     c(interv_sa_perda_ant_n, interv_s1_perda_ant_n, interv_s2_perda_ant_n, interv_s3_perda_ant_n,
       interv_s4_perda_ant_n, interv_s5_perda_ant_n, interv_sf_perda_ant_n),
@@ -131,3 +134,4 @@ interv_andamento_tabela <- interv_andamento_df |>
     `Sessão 5` = glue::glue("{sum(sessao_5_realizada, na.rm = TRUE)}/{sum(sessao_4_realizada, na.rm = TRUE)}"),
     `Sessão Final` = glue::glue("{sum(sessao_final_realizada, na.rm = TRUE)}/{sum(sessao_5_realizada, na.rm = TRUE)}")
   )
+

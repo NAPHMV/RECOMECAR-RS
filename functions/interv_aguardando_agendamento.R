@@ -49,6 +49,25 @@ interv_aguardando_agendamento <- function(sessao) {
       select(record_id) 
   }
   
+  # reagend_cols <- paste0("data_reagend_sessao_1_", 1:3)
+  # 
+  # df_filtrado <- df %>%
+  #   filter(redcap_event_name == glue::glue("Sessao {sessao} (Arm 1: Participantes)"))
+  # 
+  # resultado <- purrr::pmap_dfr(df_filtrado[reagend_cols], function(...) {
+  #   x <- c(...)
+  #   idx <- which(!is.na(x))
+  #   if (length(idx) == 0) {
+  #     tibble::tibble(ultima_reagend = as.Date(NA), ultima_reagend_num = NA_integer_)
+  #   } else {
+  #     ultimo_idx <- max(idx)
+  #     tibble::tibble(ultima_reagend = as.Date(x[ultimo_idx]), ultima_reagend_num = ultimo_idx)
+  #   }
+  # })
+  # 
+  # ultima_reagend <- df_filtrado %>%
+  #   bind_cols(resultado) %>%
+  #   select(record_id, ultima_reagend, ultima_reagend_num)
   
   # dados_agendamento <- df |>
   #   filter(
