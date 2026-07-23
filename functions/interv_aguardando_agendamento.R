@@ -118,7 +118,7 @@ interv_aguardando_agendamento <- function(sessao) {
         ) |>
         select(record_id)
     ) |>
-    left_join(
+    full_join(
       dados_andamento,
       by = "record_id"
     ) |>

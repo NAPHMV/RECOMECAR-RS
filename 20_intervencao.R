@@ -494,8 +494,7 @@ sf_aguardando_n <- length(sf_aguardando_ids)
 ### Geral
 interv_sf_perda_ids <- df |>
   filter(
-    record_id %in% (interv_andamento_df |>
-      filter(sessao_5_realizada == 1) |> pull(record_id))&
+    record_id %in% interv_s5_realiz_ids &
     redcap_event_name %in% "Sessao final (Arm 1: Participantes)" &
       (!is.na(tentativa_motivo_n_pros) | enc_sessao_superv_apto == "2 - Não")
   ) |>
@@ -636,7 +635,8 @@ interv_sa_perda_ant_ids <- df |>
     redcap_event_name %in% "Sessao de apresentação (Arm 1: Participantes)" &
       (!is.na(tentativa_motivo_n_pros) |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_s1_realiz_ids))
+            !record_id %in% interv_s1_realiz_ids &
+            !record_id %in% interv_sa_perda_ant_ids))
   ) |>
   distinct(record_id) |>
   pull()
@@ -649,7 +649,8 @@ interv_sa_perda_post_ids <- df |>
       ((!is.na(enc_sa_motivo) | 
           enc_sa_superv_apto == "2 - Não") |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_s1_realiz_ids))
+            !record_id %in% interv_s1_realiz_ids &
+            !record_id %in% interv_sa_perda_ant_ids))
   ) |>
   distinct(record_id) |>
   pull()
@@ -692,7 +693,8 @@ interv_s1_perda_post_ids <- df |>
       ((!is.na(enc_sessao_motivo) | 
           enc_sessao_superv_apto == "2 - Não") |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_s2_realiz_ids))
+            !record_id %in% interv_s2_realiz_ids &
+            !record_id %in% interv_s1_perda_ant_ids))
   ) |>
   distinct(record_id) |>
   pull()
@@ -736,7 +738,8 @@ interv_s2_perda_post_ids <- df |>
       ((!is.na(enc_sessao_motivo) | 
           enc_sessao_superv_apto == "2 - Não") |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_s3_realiz_ids))
+            !record_id %in% interv_s3_realiz_ids &
+            !record_id %in% interv_s2_perda_ant_ids))
   ) |>
   distinct(record_id) |>
   pull()
@@ -780,7 +783,8 @@ interv_s3_perda_post_ids <- df |>
       ((!is.na(enc_sessao_motivo) | 
          enc_sessao_superv_apto == "2 - Não") |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_s4_realiz_ids))
+            !record_id %in% interv_s4_realiz_ids &
+            !record_id %in% interv_s3_perda_ant_ids))
   ) |>
   distinct(record_id) |>
   pull()
@@ -824,7 +828,8 @@ interv_s4_perda_post_ids <- df |>
       ((!is.na(enc_sessao_motivo) | 
          enc_sessao_superv_apto == "2 - Não") |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_s5_realiz_ids))
+            !record_id %in% interv_s5_realiz_ids &
+            !record_id %in% interv_s4_perda_ant_ids))
   ) |>
   distinct(record_id) |>
   pull()
@@ -869,7 +874,8 @@ interv_s5_perda_post_ids <- df |>
       ((!is.na(enc_sessao_motivo) |
          enc_sessao_superv_apto == "2 - Não") |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_sf_realiz_ids))
+            !record_id %in% interv_sf_realiz_ids &
+            !record_id %in% interv_s5_perda_ant_ids))
   ) |>
   distinct(record_id) |>
   pull()
