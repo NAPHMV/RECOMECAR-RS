@@ -146,6 +146,15 @@ interv_sa_aguard_agend_ids <- df |>
   ungroup() |>
   select(record_id, ultima_tentativa_val) |>
   distinct(record_id) |>
+  # Não pode ser exclusão
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
+          !is.na(tentativa_motivo_n_pros)) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull()
 
 interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
