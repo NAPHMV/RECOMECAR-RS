@@ -635,8 +635,7 @@ interv_sa_perda_ant_ids <- df |>
     redcap_event_name %in% "Sessao de apresentação (Arm 1: Participantes)" &
       (!is.na(tentativa_motivo_n_pros) |
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_s1_realiz_ids &
-            !record_id %in% interv_sa_perda_ant_ids))
+            !record_id %in% interv_s1_realiz_ids))
   ) |>
   distinct(record_id) |>
   pull()
