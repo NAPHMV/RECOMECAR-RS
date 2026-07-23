@@ -108,7 +108,11 @@ interv_aguardando_agendamento <- function(sessao) {
   df_ids <- df |>
     filter(
       redcap_event_name == glue::glue("Sessao {sessao} (Arm 1: Participantes)"),
-      is.na(tentativa_dta_agend_1)
+      is.na(tentativa_dta_agend_1),
+      !record_id %in% (interv_andamento_df |>
+                         select(
+                           record_id, contains(glue::glue("sessao_{sessao}_realizada"))) |>
+                         filter(if_any(everything(), \(x) x == 1)))
     ) |>
     full_join(
       dados_andamento,
