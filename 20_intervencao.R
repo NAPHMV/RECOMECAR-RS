@@ -881,7 +881,6 @@ interv_s5_perda_post_ids <- df |>
 interv_s5_perda_post_n <- length(interv_s5_perda_post_ids)
 
 
-# Aguard. agendamento =========================================================
 
 
 # Realizadas e elegíveis ======================================================
