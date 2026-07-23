@@ -112,7 +112,8 @@ interv_aguardando_agendamento <- function(sessao) {
       !record_id %in% (interv_andamento_df |>
                          select(
                            record_id, contains(glue::glue("sessao_{sessao}_realizada"))) |>
-                         filter(if_any(everything(), \(x) x == 1)))
+                         filter(if_any(everything(), \(x) x == 1)) |>
+                         pull(record_id))
     ) |>
     full_join(
       dados_andamento,
