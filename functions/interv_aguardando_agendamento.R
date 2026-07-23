@@ -110,16 +110,17 @@ interv_aguardando_agendamento <- function(sessao) {
       redcap_event_name == glue::glue("Sessao {sessao} (Arm 1: Participantes)"),
       is.na(tentativa_dta_agend_1)
     ) |>
+    full_join(
+      dados_andamento,
+      by = "record_id"
+    ) |>
     anti_join(
       df |>
         filter(
           redcap_event_name == "Desfecho (Arm 1: Participantes)",
           desfecho_participante_interv == "Retirado"
         ) |>
-        select(record_id)
-    ) |>
-    full_join(
-      dados_andamento,
+        select(record_id),
       by = "record_id"
     ) |>
     # group_by(record_id) |>

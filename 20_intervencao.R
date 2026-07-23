@@ -881,6 +881,9 @@ interv_s5_perda_post_ids <- df |>
 interv_s5_perda_post_n <- length(interv_s5_perda_post_ids)
 
 
+# Aguard. agendamento =========================================================
+
+
 # Realizadas e elegíveis ======================================================
 ## Sessão A -------------------------------------------
 interv_sa_realiz_eleg_ids <- df |>
