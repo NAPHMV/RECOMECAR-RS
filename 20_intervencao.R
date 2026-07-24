@@ -470,7 +470,7 @@ df |>
 
 # Agardando ====================================================================
 ## Sessão 1 -------------------------------------------------------
-### Aguardando agendamento
+### Aguardando 1o agendamento
 interv_s1_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 1)
 interv_s1_aguard_agend_n <- length(interv_s1_aguard_agend_ids)
 
@@ -480,7 +480,7 @@ s1_aguardando_n <- length(s1_aguardando_ids)
 
 
 ## Sessão 2 -------------------------------------------------------
-### Aguardando agendamento
+### Aguardando 1o agendamento
 interv_s2_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 2)
 interv_s2_aguard_agend_n <- length(interv_s2_aguard_agend_ids)
 
@@ -490,7 +490,7 @@ s2_aguardando_n <- length(s2_aguardando_ids)
 
 
 ## Sessão 3 --------------------------------------------------------
-## Aguardando agendamento
+## Aguardando 1o agendamento
 interv_s3_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 3)
 interv_s3_aguard_agend_n <- length(interv_s3_aguard_agend_ids)
 
@@ -500,7 +500,7 @@ s3_aguardando_n <- length(s3_aguardando_ids)
 
 
 ## Sessão 4 --------------------------------------------------------
-### Aguardando agendamento
+### Aguardando 1o agendamento
 interv_s4_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 4)
 interv_s4_aguard_agend_n <- length(interv_s4_aguard_agend_ids)
 
@@ -510,7 +510,7 @@ s4_aguardando_n <- length(s4_aguardando_ids)
 
 
 ## Sessão 5 --------------------------------------------------------
-### Aguardando agendamento
+### Aguardando 1o agendamento
 interv_s5_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 5)
 interv_s5_aguard_agend_n <- length(interv_s5_aguard_agend_ids)
 
@@ -520,7 +520,7 @@ s5_aguardando_n <- length(s5_aguardando_ids)
 
 
 ## Sessão F --------------------------------------------------------
-### Aguardando agendamento
+### Aguardando 1o agendamento
 interv_sf_aguard_agend_ids <- interv_aguardando_agendamento(sessao = "final")
 interv_sf_aguard_agend_n <- length(interv_sf_aguard_agend_ids)
 
