@@ -847,4 +847,36 @@ interv_s5_realiz_eleg_n <- length(interv_s5_realiz_eleg_ids)
 
 
 
-
+## Sessão F --------------------------------------------------------
+### Perda anterior
+interv_sf_perda_ant_ids <- df |>
+  filter(
+    record_id %in% interv_s5_realiz_eleg_ids &
+      !record_id %in% interv_sf_realiz_ids &
+      redcap_event_name %in% "Sessao final (Arm 1: Participantes)" &
+      (!is.na(tentativa_motivo_n_pros) |
+         (record_id %in% interv_interromperam_geral_ids &
+            !record_id %in% interv_sf_realiz_ids))
+  ) |>
+  distinct(record_id) |> pull()
+interv_s5_perda_ant_n <- length(interv_s5_perda_ant_ids)
+### Perda posterior
+interv_sf_perda_post_ids <- df |>
+  filter(
+    record_id %in% interv_s5_realiz_eleg_ids &
+      redcap_event_name %in% "Sessao final (Arm 1: Participantes)" &
+      ((!is.na(enc_sessao_motivo) | enc_sessao_superv_apto == "2 - Não") |
+         (record_id %in% interv_interromperam_geral_ids
+            !record_id %in% interv_sf_perda_ant_ids))
+  ) |>
+  distinct(record_id) |> pull()
+interv_s5_perda_post_n <- length(interv_s5_perda_post_ids)
+### Elegível
+interv_sf_realiz_eleg_ids <- df |>
+  filter(
+    record_id %in% interv_sf_realiz_ids &
+      !record_id %in% interv_sf_perda_ant_ids &
+      !record_id %in% interv_sf_perda_post_ids
+  ) |>
+  distinct(record_id) |> pull()
+interv_sf_realiz_eleg_n <- length(interv_sf_realiz_eleg_ids)
