@@ -892,7 +892,7 @@ interv_sa_aguardando_cols <- grep("^tentativa_agendar_sessao_", names(df), value
 interv_sa_aguardando_cols <- interv_sa_aguardando_cols[
   order(as.integer(stringr::str_extract(interv_sa_aguardando_cols, "\\d+$")))]
 
-interv_sa_aguardando_ids <- df |>
+interv_sa_aguard_ids <- df |>
   filter(
     redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
     !record_id %in% interv_sa_realiz_ids,
