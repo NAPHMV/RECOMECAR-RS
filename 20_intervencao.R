@@ -404,33 +404,6 @@ interv_sa_naoinicia_str <- interv_sa_naoinicia_motivo |>
 
 
 
-## Aguardando sessão ------------------------------------------
-interv_sa_aguardando_cols <- grep("^tentativa_agendar_sessao_", names(df), value = TRUE)
-interv_sa_aguardando_cols <- interv_sa_aguardando_cols[
-  order(as.integer(stringr::str_extract(interv_sa_aguardando_cols, "\\d+$")))]
-
-interv_sa_aguardando_ids <- df |>
-  filter(
-    redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
-    !record_id %in% interv_sa_realiz_ids,
-    # if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
-    if_any(tentativa_agendar_sessao_1:tentativa_agendar_sessao_6, \(x) x %in% "Sim")
-  ) |>
-  rowwise() |>
-  mutate(
-    ultima_tentativa_val = {
-      vals <- c_across(all_of(interv_sa_aguardando_cols))
-      idx  <- max(which(!is.na(vals)), na.rm = TRUE)  # índice do último não-NA
-      if (is.finite(idx)) vals[idx] else NA_character_
-    }
-  ) |>
-  ungroup() |>
-  select(record_id, ultima_tentativa_val) |>
-  distinct(record_id) |>
-  pull()
-
-interv_sa_aguardando_n <- length(interv_sa_aguardando_ids)
-
 
 
 ## PSYCHLOPS -----------------------------------------------
@@ -914,6 +887,34 @@ interv_sa_aguard_agend_ids <- df |>
 interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
 
 
+## Aguardando sessão
+interv_sa_aguardando_cols <- grep("^tentativa_agendar_sessao_", names(df), value = TRUE)
+interv_sa_aguardando_cols <- interv_sa_aguardando_cols[
+  order(as.integer(stringr::str_extract(interv_sa_aguardando_cols, "\\d+$")))]
+
+interv_sa_aguardando_ids <- df |>
+  filter(
+    redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
+    !record_id %in% interv_sa_realiz_ids,
+    # if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
+    if_any(tentativa_agendar_sessao_1:tentativa_agendar_sessao_6, \(x) x %in% "Sim")
+  ) |>
+  rowwise() |>
+  mutate(
+    ultima_tentativa_val = {
+      vals <- c_across(all_of(interv_sa_aguardando_cols))
+      idx  <- max(which(!is.na(vals)), na.rm = TRUE)  # índice do último não-NA
+      if (is.finite(idx)) vals[idx] else NA_character_
+    }
+  ) |>
+  ungroup() |>
+  select(record_id, ultima_tentativa_val) |>
+  distinct(record_id) |>
+  pull()
+interv_sa_aguard_n <- length(interv_sa_aguard_ids)
+
+
+
 ## Sessão 1 -------------------------------------------------------
 ### Aguardando 1o agendamento
 interv_s1_aguard_agend_ids <- df |>
@@ -950,8 +951,8 @@ interv_s1_aguard_agend_ids <- df |>
 interv_s1_aguard_agend_n <- length(interv_s1_aguard_agend_ids)
 
 ### Aguardando sessão
-s1_aguardando_ids <- interv_aguardando_sessao(sessao = 1)
-s1_aguardando_n <- length(s1_aguardando_ids)
+interv_s1_aguard_ids <- interv_aguardando_sessao(sessao = 1)
+interv_s1_aguard_n <- length(interv_s1_aguard_ids)
 
 
 ## Sessão 2 -------------------------------------------------------
@@ -990,8 +991,8 @@ interv_s2_aguard_agend_ids <- df |>
 interv_s2_aguard_agend_n <- length(interv_s2_aguard_agend_ids)
 
 ### Aguardando sessão
-s2_aguardando_ids <- interv_aguardando_sessao(sessao = 2)
-s2_aguardando_n <- length(s2_aguardando_ids)
+interv_s2_aguard_ids <- interv_aguardando_sessao(sessao = 2)
+interv_s2_aguard_n <- length(interv_s2_aguard_ids)
 
 
 ## Sessão 3 --------------------------------------------------------
@@ -1030,8 +1031,8 @@ interv_s3_aguard_agend_ids <- df |>
 interv_s3_aguard_agend_n <- length(interv_s3_aguard_agend_ids)
 
 ## Aguardando sessão
-s3_aguardando_ids <- interv_aguardando_sessao(sessao = 3)
-s3_aguardando_n <- length(s3_aguardando_ids)
+interv_s3_aguard_ids <- interv_aguardando_sessao(sessao = 3)
+interv_s3_aguard_n <- length(interv_s3_aguard_ids)
 
 
 ## Sessão 4 --------------------------------------------------------
@@ -1070,8 +1071,8 @@ interv_s4_aguard_agend_ids <- df |>
 interv_s4_aguard_agend_n <- length(interv_s4_aguard_agend_ids)
 
 ### Aguardando sessão
-s4_aguardando_ids <- interv_aguardando_sessao(sessao = 4)
-s4_aguardando_n <- length(s4_aguardando_ids)
+interv_s4_aguard_ids <- interv_aguardando_sessao(sessao = 4)
+interv_s4_aguard_n <- length(interv_s4_aguard_ids)
 
 
 ## Sessão 5 --------------------------------------------------------
@@ -1110,8 +1111,8 @@ interv_s5_aguard_agend_ids <- df |>
 interv_s5_aguard_agend_n <- length(interv_s5_aguard_agend_ids)
 
 ### Aguardando sessão
-s5_aguardando_ids <- interv_aguardando_sessao(sessao = 5)
-s5_aguardando_n <- length(s5_aguardando_ids)
+interv_s5_aguard_ids <- interv_aguardando_sessao(sessao = 5)
+interv_s5_aguard_n <- length(interv_s5_aguard_ids)
 
 
 ## Sessão F --------------------------------------------------------
@@ -1150,5 +1151,5 @@ interv_sf_aguard_agend_ids <- df |>
 interv_sf_aguard_agend_n <- length(interv_sf_aguard_agend_ids)
 
 ### Aguardando sessão
-sf_aguardando_ids <- interv_aguardando_sessao(sessao = "final")
-sf_aguardando_n <- length(sf_aguardando_ids)
+interv_sf_aguard_ids <- interv_aguardando_sessao(sessao = "final")
+interv_sf_aguard_n <- length(interv_sf_aguard_ids)
