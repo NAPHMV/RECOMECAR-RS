@@ -28,7 +28,6 @@ aux_interv_base <- df |>
          encerramento_sesso_complete, checklist_de_sesso_complete) |>
   mutate(
     across(c(data_reagend_sa_1, data_reagend_sa_2, data_reagend_sa_3), \(x) as.character(as.Date(x))),
-    
     sessao_A_realizada = as.integer(encerramento_sesso_complete == "Complete" |
                                       checklist_de_sesso_complete == "Complete"),
     motivo_desistencia_sessao_A = desist_motivo_reagend_sa_1,
@@ -910,8 +909,10 @@ interv_sa_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_sa_realiz_ids) |>
   pull(record_id)
 interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
+
 
 ## Sessão 1 -------------------------------------------------------
 ### Aguardando 1o agendamento
@@ -944,6 +945,7 @@ interv_s1_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_s1_realiz_ids) |>
   pull(record_id)
 interv_s1_aguard_agend_n <- length(interv_s1_aguard_agend_ids)
 
@@ -983,6 +985,7 @@ interv_s2_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_s2_realiz_ids) |>
   pull(record_id)
 interv_s2_aguard_agend_n <- length(interv_s2_aguard_agend_ids)
 
@@ -1022,6 +1025,7 @@ interv_s3_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_s3_realiz_ids) |>
   pull(record_id)
 interv_s3_aguard_agend_n <- length(interv_s3_aguard_agend_ids)
 
@@ -1061,6 +1065,7 @@ interv_s4_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_s4_realiz_ids) |>
   pull(record_id)
 interv_s4_aguard_agend_n <- length(interv_s4_aguard_agend_ids)
 
@@ -1100,6 +1105,7 @@ interv_s5_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_s5_realiz_ids) |>
   pull(record_id)
 interv_s5_aguard_agend_n <- length(interv_s5_aguard_agend_ids)
 
@@ -1139,6 +1145,7 @@ interv_sf_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_sf_realiz_ids) |>
   pull(record_id)
 interv_sf_aguard_agend_n <- length(interv_sf_aguard_agend_ids)
 

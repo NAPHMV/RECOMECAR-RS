@@ -2,12 +2,13 @@ interv_aguardando_sessao <- function(sessao) {
   if (sessao == 1) {
     df_filtrado <- df |>
       filter(
-        redcap_event_name == "Sessao 1 (Arm 1: Participantes)" &
-        (is.na(enc_sessao_agend_data) | is.na(enc_sessao_data)),
-        # (is.na(enc_sessao_agend_data) & is.na(enc_sessao_data) &
-        #   !encerramento_sesso_complete %in% "Complete" &
-        #   !checklist_de_sesso_complete %in% "Complete") &
-        !record_id %in% interv_s1_aguard_agend_ids
+        !record_id %in% interv_s1_realiz_ids &
+          redcap_event_name == "Sessao 1 (Arm 1: Participantes)" &
+          (is.na(enc_sessao_agend_data) | is.na(enc_sessao_data)) &
+          # (is.na(enc_sessao_agend_data) & is.na(enc_sessao_data) &
+          #   !encerramento_sesso_complete %in% "Complete" &
+          #   !checklist_de_sesso_complete %in% "Complete") &
+          !record_id %in% interv_s1_aguard_agend_ids
       ) |>
       inner_join(
         interv_andamento_df |>
@@ -21,9 +22,10 @@ interv_aguardando_sessao <- function(sessao) {
   } else if (sessao == 2) {
     df_filtrado <- df |>
       filter(
-        redcap_event_name == "Sessao 2 (Arm 1: Participantes)",
-        is.na(enc_sessao_agend_data),
-        !record_id %in% interv_s2_aguard_agend_ids
+        !record_id %in% interv_s2_realiz_ids &
+          redcap_event_name == "Sessao 2 (Arm 1: Participantes)" &
+          is.na(enc_sessao_agend_data) &
+          !record_id %in% interv_s2_aguard_agend_ids
       ) |>
       inner_join(
         interv_andamento_df |>
@@ -37,8 +39,9 @@ interv_aguardando_sessao <- function(sessao) {
   } else if (sessao == 3) {
     df_filtrado <- df |>
       filter(
-        redcap_event_name == "Sessao 3 (Arm 1: Participantes)",
-        is.na(enc_sessao_agend_data),
+        !record_id %in% interv_s3_realiz_ids &
+          redcap_event_name == "Sessao 3 (Arm 1: Participantes)" &
+          is.na(enc_sessao_agend_data),
         !record_id %in% interv_s3_aguard_agend_ids
       ) |>
       inner_join(
@@ -53,8 +56,9 @@ interv_aguardando_sessao <- function(sessao) {
   } else if (sessao == 4) {
     df_filtrado <- df |>
       filter(
-        redcap_event_name == "Sessao 4 (Arm 1: Participantes)",
-        is.na(enc_sessao_agend_data),
+        !record_id %in% interv_s4_realiz_ids &
+          redcap_event_name == "Sessao 4 (Arm 1: Participantes)" &
+          is.na(enc_sessao_agend_data),
         !record_id %in% interv_s4_aguard_agend_ids
       ) |>
       inner_join(
@@ -69,14 +73,15 @@ interv_aguardando_sessao <- function(sessao) {
   } else if (sessao == 5) {
     df_filtrado <- df |>
       filter(
-        redcap_event_name == "Sessao 5 (Arm 1: Participantes)",
-        is.na(enc_sessao_agend_data),
-        !record_id %in% interv_s5_aguard_agend_ids
+        !record_id %in% interv_s5_realiz_ids &
+          redcap_event_name == "Sessao 5 (Arm 1: Participantes)" &
+          is.na(enc_sessao_agend_data) &
+          !record_id %in% interv_s5_aguard_agend_ids
       ) |>
       inner_join(
         interv_andamento_df |>
           filter(
-            sessao_4_realizada == 0,
+            sessao_4_realizada == 1,
             sessao_5_realizada == 0
           ) |>
           select(record_id),
@@ -85,9 +90,10 @@ interv_aguardando_sessao <- function(sessao) {
   } else if (sessao == "final") {
     df_filtrado <- df |>
       filter(
-        redcap_event_name == "Sessao final (Arm 1: Participantes)",
-        is.na(enc_sessao_agend_data),
-        !record_id %in% interv_sf_aguard_agend_ids
+        !record_id %in% interv_sf_realiz_ids &
+          redcap_event_name == "Sessao final (Arm 1: Participantes)" &
+          is.na(enc_sessao_agend_data) &
+          !record_id %in% interv_sf_aguard_agend_ids
       ) |>
       inner_join(
         interv_andamento_df |>
