@@ -115,7 +115,7 @@ interv_aguardando_agendamento <- function(sessao) {
                          filter(if_any(everything(), \(x) x == 1)) |>
                          pull(record_id))
     ) |>
-    full_join(
+    inner_join(
       dados_andamento,
       by = "record_id"
     ) |>
