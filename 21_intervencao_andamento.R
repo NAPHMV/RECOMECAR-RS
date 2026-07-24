@@ -72,8 +72,8 @@ interv_andamento_resumo <- tibble(
   sessao = rep(colnames(interv_sessoes_realiz), 5),
   var = c(
     rep("Finalizada e elegível",7), 
-    rep("Perda anterior à Sessão",7), rep("Perda posterior à Sessão",7), 
-    rep("Aguardando sessão", 7), rep("Aguardando primeiro agendamento", 7)),
+    rep("Perda anterior à sessão",7), rep("Perda posterior à sessão",7), 
+    rep("Aguardando sessão", 7), rep("Sem primeiro agendamento", 7)),
   value = c(
     # Realizada e seguiu
     # as.numeric(t(interv_sessoes_realiz)),
@@ -100,8 +100,8 @@ interv_andamento_resumo <- tibble(
     sessao = fct_relevel(as.factor(sessao), "Sessão A", "Sessão 1", "Sessão 2", "Sessão 3", "Sessão 4", "Sessão 5", "Sessão Final"),
     var    = fct_relevel(
       as.factor(var), 
-      "Perda anterior à Sessão", "Perda posterior à Sessão", 
-      "Aguardando primeiro agendamento", "Aguardando sessão", "Finalizada e elegível")
+      "Perda anterior à sessão", "Perda posterior à sessão", 
+      "Sem primeiro agendamento", "Aguardando sessão", "Finalizada e elegível")
   )
 
 

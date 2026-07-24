@@ -24,11 +24,13 @@ aux_interv_base <- df |>
          redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)") |>
   select(record_id, enc_sa_agend_data, 
          dta_sessao_a, data_reagend_sa_1, data_reagend_sa_2, data_reagend_sa_3,
-         desist_motivo_reagend_sa_1) |>
+         desist_motivo_reagend_sa_1,
+         encerramento_sesso_complete, checklist_de_sesso_complete) |>
   mutate(
     across(c(data_reagend_sa_1, data_reagend_sa_2, data_reagend_sa_3), \(x) as.character(as.Date(x))),
     
-    sessao_A_realizada = as.integer(!is.na(enc_sa_agend_data)),
+    sessao_A_realizada = as.integer(encerramento_sesso_complete == "Complete" |
+                                      checklist_de_sesso_complete == "Complete"),
     motivo_desistencia_sessao_A = desist_motivo_reagend_sa_1,
     desistencia_sessao_A = as.integer(!is.na(motivo_desistencia_sessao_A))
   ) |>
@@ -157,74 +159,47 @@ interv_sf_tent_iniciada_n <- length(interv_sf_tent_iniciada_ids)
 
 
 # Sessão A =====================================================================
-## Aguardando convite -----------------------------------------
-interv_sa_aguard_convite_ids <- df |>
-  # nao abriu entrada na Sessão A
-  group_by(record_id) |>
-  filter(!"Sessao de apresentação (Arm 1: Participantes)" %in% redcap_event_name) |>
-  ungroup() |>
-  # é elegível para intervenção
-  filter(
-    record_id %in% tri_eleg_interv_ids
-    # particip_eleg_continuidade == "Sim"
-  ) |>
-  distinct(record_id) |>
-  # junta com quem abriu enrtada na Sessão A, mas não tem tentativa de contato
-  full_join(
-    df |>
-      filter(
-        redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
-          is.na(tentativa_contato_realiz_1)
-      ) |>
-      distinct(record_id),
-    by = "record_id"
-  ) |>
-  pull()
-
-interv_sa_aguard_convite_n <- length(interv_sa_aguard_convite_ids)
-
-
-## Aguardando agendamento -------------------------------------
-interv_aguard_agend_cols <- grep("^tentativa_agendar_sessao_", names(df), value = TRUE)
-# Ordena garantindo ordem numérica: _1, _2, _3...
-interv_aguard_agend_cols <- interv_aguard_agend_cols[
-  order(as.integer(stringr::str_extract(interv_aguard_agend_cols, "\\d+$")))]
-
-interv_sa_aguard_agend_ids <- df |>
-  filter(
-    redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
-    record_id %in% tri_eleg_interv_ids,
-    if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
-    !if_any(tentativa_agendar_sessao_1:tentativa_agendar_sessao_6, \(x) x %in% "Sim")
-  ) |>
-  rowwise() |>
-  mutate(
-    # ultima_tentativa_col = {
-    #   vals <- c_across(all_of(interv_aguard_agend_cols))
-    #   idx  <- max(which(vals %in% c("Não")), na.rm = TRUE)  # último "Não" ou NA
-    #   if (is.finite(idx)) interv_aguard_agend_cols[idx] else NA_character_
-    # },
-    ultima_tentativa_val = {
-      vals <- c_across(all_of(interv_aguard_agend_cols))
-      idx  <- max(which(vals %in% c("Não")), na.rm = TRUE)  # último "Não" ou NA
-      if (is.finite(idx)) vals[idx] else NA_character_
-    }
-  ) |>
-  ungroup() |>
-  select(record_id, ultima_tentativa_val) |>
-  distinct(record_id) |>
-  # Não pode ser exclusão
-  anti_join(
-    df |>
-      filter(
-        redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
-          !is.na(tentativa_motivo_n_pros)) |>
-      distinct(record_id),
-    by = "record_id"
-  ) |>
-  pull()
-
-interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
+## Em tentativa --------------------------------------------------
+# interv_aguard_agend_cols <- grep("^tentativa_agendar_sessao_", names(df), value = TRUE)
+# # Ordena garantindo ordem numérica: _1, _2, _3...
+# interv_aguard_agend_cols <- interv_aguard_agend_cols[
+#   order(as.integer(stringr::str_extract(interv_aguard_agend_cols, "\\d+$")))]
+# 
+# interv_sa_aguard_agend_ids <- df |>
+#   filter(
+#     redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
+#     record_id %in% tri_eleg_interv_ids,
+#     if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
+#     !if_any(tentativa_agendar_sessao_1:tentativa_agendar_sessao_6, \(x) x %in% "Sim")
+#   ) |>
+#   rowwise() |>
+#   mutate(
+#     # ultima_tentativa_col = {
+#     #   vals <- c_across(all_of(interv_aguard_agend_cols))
+#     #   idx  <- max(which(vals %in% c("Não")), na.rm = TRUE)  # último "Não" ou NA
+#     #   if (is.finite(idx)) interv_aguard_agend_cols[idx] else NA_character_
+#     # },
+#     ultima_tentativa_val = {
+#       vals <- c_across(all_of(interv_aguard_agend_cols))
+#       idx  <- max(which(vals %in% c("Não")), na.rm = TRUE)  # último "Não" ou NA
+#       if (is.finite(idx)) vals[idx] else NA_character_
+#     }
+#   ) |>
+#   ungroup() |>
+#   select(record_id, ultima_tentativa_val) |>
+#   distinct(record_id) |>
+#   # Não pode ser exclusão
+#   anti_join(
+#     df |>
+#       filter(
+#         redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
+#           !is.na(tentativa_motivo_n_pros)) |>
+#       distinct(record_id),
+#     by = "record_id"
+#   ) |>
+#   pull()
+# 
+# interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
 
 
 
@@ -467,66 +442,6 @@ df |>
   ) |>
   pull(psychlops_media)
 
-
-# Agardando ====================================================================
-## Sessão 1 -------------------------------------------------------
-### Aguardando 1o agendamento
-interv_s1_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 1)
-interv_s1_aguard_agend_n <- length(interv_s1_aguard_agend_ids)
-
-### Aguardando sessão
-s1_aguardando_ids <- interv_aguardando_sessao(sessao = 1)
-s1_aguardando_n <- length(s1_aguardando_ids)
-
-
-## Sessão 2 -------------------------------------------------------
-### Aguardando 1o agendamento
-interv_s2_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 2)
-interv_s2_aguard_agend_n <- length(interv_s2_aguard_agend_ids)
-
-### Aguardando sessão
-s2_aguardando_ids <- interv_aguardando_sessao(sessao = 2)
-s2_aguardando_n <- length(s2_aguardando_ids)
-
-
-## Sessão 3 --------------------------------------------------------
-## Aguardando 1o agendamento
-interv_s3_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 3)
-interv_s3_aguard_agend_n <- length(interv_s3_aguard_agend_ids)
-
-## Aguardando sessão
-s3_aguardando_ids <- interv_aguardando_sessao(sessao = 3)
-s3_aguardando_n <- length(s3_aguardando_ids)
-
-
-## Sessão 4 --------------------------------------------------------
-### Aguardando 1o agendamento
-interv_s4_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 4)
-interv_s4_aguard_agend_n <- length(interv_s4_aguard_agend_ids)
-
-### Aguardando sessão
-s4_aguardando_ids <- interv_aguardando_sessao(sessao = 4)
-s4_aguardando_n <- length(s4_aguardando_ids)
-
-
-## Sessão 5 --------------------------------------------------------
-### Aguardando 1o agendamento
-interv_s5_aguard_agend_ids <- interv_aguardando_agendamento(sessao = 5)
-interv_s5_aguard_agend_n <- length(interv_s5_aguard_agend_ids)
-
-### Aguardando sessão
-s5_aguardando_ids <- interv_aguardando_sessao(sessao = 5)
-s5_aguardando_n <- length(s5_aguardando_ids)
-
-
-## Sessão F --------------------------------------------------------
-### Aguardando 1o agendamento
-interv_sf_aguard_agend_ids <- interv_aguardando_agendamento(sessao = "final")
-interv_sf_aguard_agend_n <- length(interv_sf_aguard_agend_ids)
-
-### Aguardando sessão
-sf_aguardando_ids <- interv_aguardando_sessao(sessao = "final")
-sf_aguardando_n <- length(sf_aguardando_ids)
 
 
 
@@ -947,3 +862,286 @@ interv_sf_realiz_eleg_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_sf_realiz_eleg_n <- length(interv_sf_realiz_eleg_ids)
+
+
+
+
+# Agardando ====================================================================
+## Sessão A ----------------------------------------------------
+### Aguardando convite
+interv_sa_aguard_convite_ids <- df |>
+  # nao abriu entrada na Sessão A
+  group_by(record_id) |>
+  filter(!"Sessao de apresentação (Arm 1: Participantes)" %in% redcap_event_name) |>
+  ungroup() |>
+  # é elegível para intervenção
+  filter(
+    record_id %in% tri_eleg_interv_ids
+    # particip_eleg_continuidade == "Sim"
+  ) |>
+  distinct(record_id) |>
+  # junta com quem abriu enrtada na Sessão A, mas não tem tentativa de contato
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
+          is.na(tentativa_contato_realiz_1)
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull()
+interv_sa_aguard_convite_n <- length(interv_sa_aguard_convite_ids)
+
+### Aguardando 1o agendamento
+interv_sa_aguard_agend_ids <- df |>
+  filter(
+    !record_id %in% interv_sa_realiz_ids &
+    redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)") &
+    is.na(tentativa_dta_agend_1)
+  ) |>
+  distinct(record_id) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Desfecho (Arm 1: Participantes)",
+        desfecho_participante_interv == "Retirado"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull(record_id)
+interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
+
+## Sessão 1 -------------------------------------------------------
+### Aguardando 1o agendamento
+interv_s1_aguard_agend_ids <- df |>
+  filter(
+    record_id %in% interv_sa_realiz_eleg_ids &
+      !record_id %in% interv_s1_realiz_ids
+  ) |>
+  distinct(record_id) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 1 (Arm 1: Participantes)") &
+          is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 1 (Arm 1: Participantes)") &
+          !is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Desfecho (Arm 1: Participantes)",
+        desfecho_participante_interv == "Retirado"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull(record_id)
+interv_s1_aguard_agend_n <- length(interv_s1_aguard_agend_ids)
+
+### Aguardando sessão
+s1_aguardando_ids <- interv_aguardando_sessao(sessao = 1)
+s1_aguardando_n <- length(s1_aguardando_ids)
+
+
+## Sessão 2 -------------------------------------------------------
+### Aguardando 1o agendamento
+interv_s2_aguard_agend_ids <- df |>
+  filter(
+    record_id %in% interv_s1_realiz_eleg_ids &
+      !record_id %in% interv_s2_realiz_ids
+  ) |>
+  distinct(record_id) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 2 (Arm 1: Participantes)") &
+          is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 2 (Arm 1: Participantes)") &
+          !is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Desfecho (Arm 1: Participantes)",
+        desfecho_participante_interv == "Retirado"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull(record_id)
+interv_s2_aguard_agend_n <- length(interv_s2_aguard_agend_ids)
+
+### Aguardando sessão
+s2_aguardando_ids <- interv_aguardando_sessao(sessao = 2)
+s2_aguardando_n <- length(s2_aguardando_ids)
+
+
+## Sessão 3 --------------------------------------------------------
+## Aguardando 1o agendamento
+interv_s3_aguard_agend_ids <- df |>
+  filter(
+    record_id %in% interv_s2_realiz_eleg_ids &
+      !record_id %in% interv_s3_realiz_ids
+  ) |>
+  distinct(record_id) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 3 (Arm 1: Participantes)") &
+          is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 3 (Arm 1: Participantes)") &
+          !is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Desfecho (Arm 1: Participantes)",
+        desfecho_participante_interv == "Retirado"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull(record_id)
+interv_s3_aguard_agend_n <- length(interv_s3_aguard_agend_ids)
+
+## Aguardando sessão
+s3_aguardando_ids <- interv_aguardando_sessao(sessao = 3)
+s3_aguardando_n <- length(s3_aguardando_ids)
+
+
+## Sessão 4 --------------------------------------------------------
+### Aguardando 1o agendamento
+interv_s4_aguard_agend_ids <- df |>
+  filter(
+    record_id %in% interv_s3_realiz_eleg_ids &
+      !record_id %in% interv_s4_realiz_ids
+  ) |>
+  distinct(record_id) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 4 (Arm 1: Participantes)") &
+          is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 4 (Arm 1: Participantes)") &
+          !is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Desfecho (Arm 1: Participantes)",
+        desfecho_participante_interv == "Retirado"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull(record_id)
+interv_s4_aguard_agend_n <- length(interv_s4_aguard_agend_ids)
+
+### Aguardando sessão
+s4_aguardando_ids <- interv_aguardando_sessao(sessao = 4)
+s4_aguardando_n <- length(s4_aguardando_ids)
+
+
+## Sessão 5 --------------------------------------------------------
+### Aguardando 1o agendamento
+interv_s5_aguard_agend_ids <- df |>
+  filter(
+    record_id %in% interv_s4_realiz_eleg_ids &
+      !record_id %in% interv_s5_realiz_ids
+  ) |>
+  distinct(record_id) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 5 (Arm 1: Participantes)") &
+          is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao 5 (Arm 1: Participantes)") &
+          !is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Desfecho (Arm 1: Participantes)",
+        desfecho_participante_interv == "Retirado"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull(record_id)
+interv_s5_aguard_agend_n <- length(interv_s5_aguard_agend_ids)
+
+### Aguardando sessão
+s5_aguardando_ids <- interv_aguardando_sessao(sessao = 5)
+s5_aguardando_n <- length(s5_aguardando_ids)
+
+
+## Sessão F --------------------------------------------------------
+### Aguardando 1o agendamento
+interv_sf_aguard_agend_ids <- df |>
+  filter(
+    record_id %in% interv_s5_realiz_eleg_ids &
+      !record_id %in% interv_sf_realiz_ids
+  ) |>
+  distinct(record_id) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao final (Arm 1: Participantes)") &
+          is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao final (Arm 1: Participantes)") &
+          !is.na(tentativa_dta_agend_1)) |>
+      distinct(record_id), by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(
+        redcap_event_name == "Desfecho (Arm 1: Participantes)",
+        desfecho_participante_interv == "Retirado"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull(record_id)
+interv_sf_aguard_agend_n <- length(interv_sf_aguard_agend_ids)
+
+### Aguardando sessão
+sf_aguardando_ids <- interv_aguardando_sessao(sessao = "final")
+sf_aguardando_n <- length(sf_aguardando_ids)

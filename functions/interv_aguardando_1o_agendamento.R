@@ -104,17 +104,29 @@ interv_aguardando_agendamento <- function(sessao) {
   #                        tentativa_agendar_sessao_3, tentativa_agendar_sessao_4,
   #                        tentativa_agendar_sessao_5, tentativa_agendar_sessao_6),
   #          \(x) x %in% "Sim"))
+  if (is.numeric(sessao)) {
+    base1 <- df |>
+      filter(
+        redcap_event_name == glue::glue("Sessao {sessao} (Arm 1: Participantes)"),
+        is.na(tentativa_dta_agend_1),
+        !record_id %in% (interv_andamento_df |>
+                           select(
+                             record_id, contains(glue::glue("sessao_{sessao}_realizada"))) |>
+                           filter(if_any(everything(), \(x) x == 1)) |>
+                           pull(record_id))
+      ) |>
+      full_join(
+        df |>
+          filter(
+            redcap_event_name == glue::glue("Sessao {sessao-1} (Arm 1: Participantes)") &
+              record_id %in% dados_andamento)
+      )
+  } else {
+    base1 <- 
+  }
   
-  df_ids <- df |>
-    filter(
-      redcap_event_name == glue::glue("Sessao {sessao} (Arm 1: Participantes)"),
-      is.na(tentativa_dta_agend_1),
-      !record_id %in% (interv_andamento_df |>
-                         select(
-                           record_id, contains(glue::glue("sessao_{sessao}_realizada"))) |>
-                         filter(if_any(everything(), \(x) x == 1)) |>
-                         pull(record_id))
-    ) |>
+  
+  df_ids <- base1 |>
     inner_join(
       dados_andamento,
       by = "record_id"
