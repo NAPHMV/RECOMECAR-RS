@@ -58,9 +58,9 @@ interv_andamento_resumo <- tibble(
     c(interv_sa_perda_post_n, interv_s1_perda_post_n, interv_s2_perda_post_n, interv_s3_perda_post_n,
       interv_s4_perda_post_n, interv_s5_perda_post_n, interv_sf_perda_post_n),
     # Aguardando sessão
-    c(interv_sa_aguardando_n, s1_aguardando_n, s2_aguardando_n, 
-      s3_aguardando_n, s4_aguardando_n, 
-      s5_aguardando_n, sf_aguardando_n),
+    c(interv_sa_aguard_n, interv_s1_aguard_n, interv_s2_aguard_n, 
+      interv_s3_aguard_n, interv_s4_aguard_n, interv_s5_aguard_n, 
+      interv_sf_aguard_n),
     # Aguardando agendamento
     c(interv_sa_aguard_agend_n, interv_s1_aguard_agend_n, interv_s2_aguard_agend_n, 
       interv_s3_aguard_agend_n, interv_s4_aguard_agend_n, 
