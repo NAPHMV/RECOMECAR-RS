@@ -120,7 +120,7 @@ tri_manejo_nao_eleg_n <- length(tri_manejo_nao_eleg_ids)
 
 
 # Meta triagens ================================================================
-meta_triagens <- 10000
+meta_triagens <- 2000
 prop_meta_triagens <- paste0(round(100*(tri_realiz_n / meta_triagens), 2),"%")
 
 

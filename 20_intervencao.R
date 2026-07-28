@@ -219,7 +219,7 @@ interv_sa_realiz_ids <- interv_andamento_df |>
 interv_sa_realiz_n <- length(interv_sa_realiz_ids)
 
 
-## Exclusão -------------------------------------------------
+## Exclusão 
 # interv_exclusao_motivo <- df |>
 #   with(table(enc_sessao_motivo)) |>
 #   as.data.frame() |>
@@ -301,32 +301,32 @@ interv_sa_perda_ids <- df |>
   distinct(record_id) |>
   pull()
 
-interv_sa_exclusao_str <- df |>
-  filter(record_id %in% interv_sa_realiz_ids) |>
-  anti_join(
-    df |>
-      filter(redcap_event_name == "Sessao 1 (Arm 1: Participantes)"  &
-               !is.na(gad7_perg_1)) |>
-      select(record_id),
-    by = "record_id"
-  ) |>
-  filter(
-    redcap_event_name == "Desfecho (Arm 1: Participantes)",
-    desfecho_participante_interv == "Retirado"
-  ) |>
-  select(
-    # desfecho_participante_interv, 
-    desfecho_participante_motivo_interv #, 
-    # desfecho_participante_motivo_exclu_interv___1:desfecho_participante_motivo_exclu_interv___5
-  ) |>
-  with(rstatix::freq_table(desfecho_participante_motivo_interv)) |>
-  arrange(group) |>
-  mutate(linha = glue("{group} = {n}")) |>
-  pull(linha) |>
-  paste(collapse = "\n")
+# interv_sa_exclusao_str <- df |>
+#   filter(record_id %in% interv_sa_realiz_ids) |>
+#   anti_join(
+#     df |>
+#       filter(redcap_event_name == "Sessao 1 (Arm 1: Participantes)"  &
+#                !is.na(gad7_perg_1)) |>
+#       select(record_id),
+#     by = "record_id"
+#   ) |>
+#   filter(
+#     redcap_event_name == "Desfecho (Arm 1: Participantes)",
+#     desfecho_participante_interv == "Retirado"
+#   ) |>
+#   select(
+#     # desfecho_participante_interv, 
+#     desfecho_participante_motivo_interv #, 
+#     # desfecho_participante_motivo_exclu_interv___1:desfecho_participante_motivo_exclu_interv___5
+#   ) |>
+#   with(rstatix::freq_table(desfecho_participante_motivo_interv)) |>
+#   arrange(group) |>
+#   mutate(linha = glue("{group} = {n}")) |>
+#   pull(linha) |>
+#   paste(collapse = "\n")
 
 
-## Não iniciam -------------------------------------------
+## Não iniciam 
 interv_sa_nao_concordam_ids <- df |>
   filter(
     redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
@@ -337,70 +337,70 @@ interv_sa_nao_concordam_ids <- df |>
 
 interv_sa_nao_concordam_n <- length(interv_sa_nao_concordam_ids)
 
-interv_sa_naoinicia_motivo <- df |>
-  with(table(desist_motivo_sa)) |>
-  as.data.frame() |>
-  rename(motivo = desist_motivo_sa, n1 = Freq) |>
-  bind_rows(
-    df |>
-      filter(nao_comp_motivo_sa == "Óbito") |>
-      distinct(record_id) %>%
-      reframe(motivo = "Óbito", n1 = nrow(.))
-  ) |>
-  left_join(
-    df |>
-      with(table(desist_motivo_reagend_sa_1)) |>
-      as.data.frame() |>
-      rename(motivo = desist_motivo_reagend_sa_1, n2 = Freq)
-  ) |>
-  rows_update(
-    df |>
-      filter(nao_comp_motivo_reagend_sa_1 == "Óbito") |>
-      distinct(record_id) %>%
-      reframe(motivo = "Óbito", n2 = nrow(.)),
-    by = 'motivo'
-  ) |>
-  left_join(
-    df |>
-      with(table(desist_motivo_reagend_sa_2)) |>
-      as.data.frame() |>
-      rename(motivo = desist_motivo_reagend_sa_2, n3 = Freq)
-  ) |>
-  rows_update(
-    df |>
-      filter(nao_comp_motivo_reagend_sa_2 == "Óbito") |>
-      distinct(record_id) %>%
-      reframe(motivo = "Óbito", n3 = nrow(.)),
-    by = 'motivo'
-  ) |>
-  left_join(
-    df |>
-      with(table(desist_motivo_reagend_sa_3)) |>
-      as.data.frame() |>
-      rename(motivo = desist_motivo_reagend_sa_3, n4 = Freq)
-  ) |>
-  rows_update(
-    df |>
-      filter(nao_comp_motivo_reagend_sa_3_2 == "Óbito") |>
-      distinct(record_id) %>%
-      reframe(motivo = "Óbito", n4 = nrow(.)),
-    by = 'motivo'
-  ) |>
-  group_by(motivo) |>
-  mutate(
-    n = sum(c(n1, n2, n3, n4))
-  ) |>
-  select(motivo, n) |>
-  ungroup()
-
-interv_sa_naoinicia_n <- sum(interv_sa_naoinicia_motivo$n)
-
-interv_sa_naoinicia_str <- interv_sa_naoinicia_motivo |>
-  arrange(-n) |>
-  # filter(n > 0) |>
-  mutate(linha = glue("{motivo} = {n}")) |>
-  pull(linha) |>
-  paste(collapse = "\n")
+# interv_sa_naoinicia_motivo <- df |>
+#   with(table(desist_motivo_sa)) |>
+#   as.data.frame() |>
+#   rename(motivo = desist_motivo_sa, n1 = Freq) |>
+#   bind_rows(
+#     df |>
+#       filter(nao_comp_motivo_sa == "Óbito") |>
+#       distinct(record_id) %>%
+#       reframe(motivo = "Óbito", n1 = nrow(.))
+#   ) |>
+#   left_join(
+#     df |>
+#       with(table(desist_motivo_reagend_sa_1)) |>
+#       as.data.frame() |>
+#       rename(motivo = desist_motivo_reagend_sa_1, n2 = Freq)
+#   ) |>
+#   rows_update(
+#     df |>
+#       filter(nao_comp_motivo_reagend_sa_1 == "Óbito") |>
+#       distinct(record_id) %>%
+#       reframe(motivo = "Óbito", n2 = nrow(.)),
+#     by = 'motivo'
+#   ) |>
+#   left_join(
+#     df |>
+#       with(table(desist_motivo_reagend_sa_2)) |>
+#       as.data.frame() |>
+#       rename(motivo = desist_motivo_reagend_sa_2, n3 = Freq)
+#   ) |>
+#   rows_update(
+#     df |>
+#       filter(nao_comp_motivo_reagend_sa_2 == "Óbito") |>
+#       distinct(record_id) %>%
+#       reframe(motivo = "Óbito", n3 = nrow(.)),
+#     by = 'motivo'
+#   ) |>
+#   left_join(
+#     df |>
+#       with(table(desist_motivo_reagend_sa_3)) |>
+#       as.data.frame() |>
+#       rename(motivo = desist_motivo_reagend_sa_3, n4 = Freq)
+#   ) |>
+#   rows_update(
+#     df |>
+#       filter(nao_comp_motivo_reagend_sa_3_2 == "Óbito") |>
+#       distinct(record_id) %>%
+#       reframe(motivo = "Óbito", n4 = nrow(.)),
+#     by = 'motivo'
+#   ) |>
+#   group_by(motivo) |>
+#   mutate(
+#     n = sum(c(n1, n2, n3, n4))
+#   ) |>
+#   select(motivo, n) |>
+#   ungroup()
+# 
+# interv_sa_naoinicia_n <- sum(interv_sa_naoinicia_motivo$n)
+# 
+# interv_sa_naoinicia_str <- interv_sa_naoinicia_motivo |>
+#   arrange(-n) |>
+#   # filter(n > 0) |>
+#   mutate(linha = glue("{motivo} = {n}")) |>
+#   pull(linha) |>
+#   paste(collapse = "\n")
 
 
 
@@ -579,7 +579,7 @@ interv_interromperam_str <- df |>
 
 # Perdas e elegíveis ==========================================================
 ## Sessão A -----------------------------------------
-### Perda anterior
+### Perda anterior ----
 interv_sa_perda_ant_ids <- df |>
   filter(
     !record_id %in% interv_sa_realiz_ids &
@@ -590,7 +590,7 @@ interv_sa_perda_ant_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_sa_perda_ant_n <- length(interv_sa_perda_ant_ids)
-### Perda posterior
+### Perda posterior ----
 interv_sa_perda_post_ids <- df |>
   filter(
     !record_id %in% interv_s1_tent_iniciada_ids &
@@ -602,7 +602,46 @@ interv_sa_perda_post_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_sa_perda_post_n <- length(interv_sa_perda_post_ids)
-## Elegível
+### Perda geral ----
+interv_sa_perda_ids <- df |> 
+  filter(record_id %in% c(interv_sa_perda_ant_ids, interv_sa_perda_post_ids)) |>
+  distinct(record_id) |> 
+  pull()
+interv_sa_perda_n <- length(interv_sa_perda_ids)
+
+### Não inicia ----
+interv_sa_naonicia_ids <- df |>
+  filter(
+    record_id %in% interv_sa_perda_ant_ids &
+      redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
+      if_any(starts_with("tentativa_contato_realiz_"), \(x) x == "Sim") &
+      !is.na(tentativa_motivo_n_pros)
+  ) |>
+  distinct(record_id) |>
+  pull()
+interv_sa_naonicia_n <- length(interv_sa_naonicia_ids)
+
+interv_sa_naonicia_str <- df |>
+  filter(record_id %in% interv_sa_naonicia_ids) |>
+  with(rstatix::freq_table(tentativa_motivo_n_pros)) |>
+  arrange(group) |>
+  mutate(linha = glue("{group} = {n}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
+### Exclusão ----
+interv_sa_exclusao_str <- df |>
+  filter(
+    record_id %in% interv_sa_perda_post_ids &
+      !is.na(desfecho_participante_motivo_interv)
+  ) |>
+  with(rstatix::freq_table(desfecho_participante_motivo_interv)) |>
+  arrange(group) |>
+  mutate(linha = glue("{group} = {n}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
+### Elegível ----
 interv_sa_realiz_eleg_ids <- df |>
   filter(
     record_id %in% interv_sa_realiz_ids &
@@ -639,6 +678,13 @@ interv_s1_perda_post_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_s1_perda_post_n <- length(interv_s1_perda_post_ids)
+### Perda geral
+interv_s1_perda_ids <- df |> 
+  filter(record_id %in% c(interv_s1_perda_ant_ids, interv_s1_perda_post_ids)) |>
+  distinct(record_id) |> 
+  pull()
+interv_s1_perda_n <- length(interv_s1_perda_ids)
+
 ### Elegível
 interv_s1_realiz_eleg_ids <- df |>
   filter(
@@ -651,7 +697,7 @@ interv_s1_realiz_eleg_n <- length(interv_s1_realiz_eleg_ids)
 
 
 ## Sessão 2 ------------------------------------------------------
-### Geral
+### Perda anterior
 interv_s2_perda_ant_ids <- df |>
   filter(
     record_id %in% interv_s1_realiz_eleg_ids &
@@ -663,7 +709,7 @@ interv_s2_perda_ant_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_s2_perda_ant_n <- length(interv_s2_perda_ant_ids)
-
+### Perda posterior
 interv_s2_perda_post_ids <- df |>
   filter(
     record_id %in% interv_s1_realiz_eleg_ids &
@@ -676,7 +722,14 @@ interv_s2_perda_post_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_s2_perda_post_n <- length(interv_s2_perda_post_ids)
+### Perda geral
+interv_s2_perda_ids <- df |> 
+  filter(record_id %in% c(interv_s2_perda_ant_ids, interv_s2_perda_post_ids)) |>
+  distinct(record_id) |> 
+  pull()
+interv_s2_perda_n <- length(interv_s2_perda_ids)
 
+### Elegível
 interv_s2_realiz_eleg_ids <- df |>
   filter(
     record_id %in% interv_s2_realiz_ids &
@@ -713,6 +766,13 @@ interv_s3_perda_post_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_s3_perda_post_n <- length(interv_s3_perda_post_ids)
+### Perda geral
+interv_s3_perda_ids <- df |> 
+  filter(record_id %in% c(interv_s3_perda_ant_ids, interv_s3_perda_post_ids)) |>
+  distinct(record_id) |> 
+  pull()
+interv_s3_perda_n <- length(interv_s3_perda_ids)
+
 ### Elegível
 interv_s3_realiz_eleg_ids <- df |>
   filter(
@@ -750,6 +810,13 @@ interv_s4_perda_post_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_s4_perda_post_n <- length(interv_s4_perda_post_ids)
+### Perda geral
+interv_s4_perda_ids <- df |> 
+  filter(record_id %in% c(interv_s4_perda_ant_ids, interv_s4_perda_post_ids)) |>
+  distinct(record_id) |> 
+  pull()
+interv_s4_perda_n <- length(interv_s4_perda_ids)
+
 ### Elegível
 interv_s4_realiz_eleg_ids <- df |>
   filter(
@@ -788,6 +855,13 @@ interv_s5_perda_post_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_s5_perda_post_n <- length(interv_s5_perda_post_ids)
+### Perda geral
+interv_s5_perda_ids <- df |> 
+  filter(record_id %in% c(interv_s5_perda_ant_ids, interv_s5_perda_post_ids)) |>
+  distinct(record_id) |> 
+  pull()
+interv_s5_perda_n <- length(interv_s5_perda_ids)
+
 ### Elegível
 interv_s5_realiz_eleg_ids <- df |>
   filter(
@@ -825,6 +899,13 @@ interv_sf_perda_post_ids <- df |>
   ) |>
   distinct(record_id) |> pull()
 interv_s5_perda_post_n <- length(interv_s5_perda_post_ids)
+### Perda geral
+interv_sf_perda_ids <- df |> 
+  filter(record_id %in% c(interv_sf_perda_ant_ids, interv_sf_perda_post_ids)) |>
+  distinct(record_id) |> 
+  pull()
+interv_sf_perda_n <- length(interv_sf_perda_ids)
+
 ### Elegível
 interv_sf_realiz_eleg_ids <- df |>
   filter(
