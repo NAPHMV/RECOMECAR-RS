@@ -938,11 +938,13 @@ interv_sa_aguard_convite_ids <- df |>
     df |>
       filter(
         redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
-          is.na(tentativa_contato_realiz_1)
+          (is.na(tentativa_contato_realiz_1) |
+             is.na(tentativa_obs_1))
       ) |>
       distinct(record_id),
     by = "record_id"
   ) |>
+  filter(!record_id %in% interv_sa_realiz_ids) |>
   pull()
 interv_sa_aguard_convite_n <- length(interv_sa_aguard_convite_ids)
 

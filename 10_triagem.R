@@ -68,6 +68,7 @@ tri_eleg_interv_ids <- df %>%
 
 tri_eleg_interv_n <- length(tri_eleg_interv_ids)
 
+
 # Exclusões ==============================================
 tri_nao_aceitaram_n <- df |>
   summarise(
@@ -117,6 +118,18 @@ tri_manejo_nao_eleg_ids <- df |>
 tri_manejo_nao_eleg_n <- length(tri_manejo_nao_eleg_ids)
 
 
+
+# Não-elegíveis Intervenção ===================================================
+tri_nao_eleg_interv_ids <- df |>
+  filter(
+    record_id %in% tri_realiz_ids &
+      (calc_elegi_triagem == 0 |
+         desfecho_participante == "Retirado" |
+         record_id %in% tri_manejo_nao_eleg_ids)
+  ) |>
+  distinct(record_id) |>
+  pull()
+tri_nao_eleg_interv_n <- length(tri_nao_eleg_interv_ids)
 
 
 # Meta triagens ================================================================
