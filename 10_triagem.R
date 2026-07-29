@@ -64,6 +64,12 @@ tri_eleg_interv_ids <- df %>%
   ) |>
   filter(partic_elegivel == 1) |>
   distinct(record_id) |>
+  anti_join(
+    df |>
+      filter(desfecho_participante == "Retirado") |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull()
 
 tri_eleg_interv_n <- length(tri_eleg_interv_ids)

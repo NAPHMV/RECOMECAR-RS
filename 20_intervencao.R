@@ -952,8 +952,9 @@ interv_sa_aguard_convite_n <- length(interv_sa_aguard_convite_ids)
 interv_sa_aguard_agend_ids <- df |>
   filter(
     !record_id %in% interv_sa_realiz_ids &
-    redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)") &
-    is.na(tentativa_dta_agend_1)
+      !record_id %in% interv_sa_aguard_convite_ids &
+      redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)") &
+      !(!is.na(tentativa_dta_agend_1) | !is.na(tentativa_obs_1))
   ) |>
   distinct(record_id) |>
   anti_join(
@@ -993,6 +994,12 @@ interv_sa_aguard_ids <- df |>
   ungroup() |>
   select(record_id, ultima_tentativa_val) |>
   distinct(record_id) |>
+  anti_join(
+    df |>
+      filter(desfecho_participante_interv == "Retirado") |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull()
 interv_sa_aguard_n <- length(interv_sa_aguard_ids)
 
