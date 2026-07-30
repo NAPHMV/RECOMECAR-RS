@@ -614,7 +614,7 @@ interv_sa_naoinicia_ids <- df |>
   filter(
     record_id %in% interv_sa_perda_ant_ids &
       redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
-      if_any(starts_with("tentativa_contato_realiz_"), \(x) x == "Sim") &
+      # if_any(starts_with("tentativa_contato_realiz_"), \(x) x == "Sim") &
       !is.na(tentativa_motivo_n_pros)
   ) |>
   distinct(record_id) |>
