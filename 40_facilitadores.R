@@ -41,3 +41,27 @@ facilit_seg_andamento_resumo <- df |>
     `12 meses` = if_else(`9 meses` == "Saiu do estudo" | `9 meses` == "", "", `12 meses`)
   ) |>
   rename(ID = record_id)
+
+
+# PHQ-9 =======================================================================
+facilit_manejo_phq9 <- df |>
+  filter(
+    (redcap_event_name == "Durante o Treinamento (Arm 2: Facilitadores)" |
+       redcap_event_name == "Seguimento 3m (Arm 2: Facilitadores)" |
+       redcap_event_name == "Seguimento 6m (Arm 2: Facilitadores)" |
+       redcap_event_name == "Seguimento 9m (Arm 2: Facilitadores)" |
+       redcap_event_name == "Seguimento 12m (Arm 2: Facilitadores)") &
+      (!phq9_perg_9 %in% "Nenhuma vez") & !is.na(phq9_perg_9)
+  ) |>
+  group_by(record_id) |>
+  summarise(
+    momento = case_when(
+      redcap_event_name %in% "Durante o Treinamento (Arm 2: Facilitadores)" ~ "Treinamento",
+      TRUE ~ "Acompanhamento"),
+    data = coalesce(as.Date(phq9_dta_preenchi), as.Date(phq9_timestamp))
+  ) |>
+  rename(
+    ID = record_id,
+    `Momento da pontuação` = momento,
+    `Data` = data
+  )
