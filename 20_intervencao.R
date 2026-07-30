@@ -272,12 +272,7 @@ interv_sa_desist_n <- length(interv_sa_desist_ids)
 interv_sa_exclusao_ids <- df |>
   filter(
     record_id %in% interv_sa_realiz_ids &
-      !record_id %in% (
-        interv_andamento_df |> 
-          filter(sessao_1_realizada == 1) |>
-          distinct(record_id) |>
-          pull()
-      )
+      !record_id %in% interv_s1_realiz_ids
   ) |>
   filter(
     redcap_event_name == "Desfecho (Arm 1: Participantes)",
