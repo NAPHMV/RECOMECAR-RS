@@ -1,10 +1,11 @@
 # Tipo de atendimento =========================================================
 seg_manejo_tipo_df <- df |>
-  filter(grepl("Arm 2:", redcap_event_name)) |>
   filter(
-    if_any(
-      c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1), 
-      \(x) x %in% "Sim")
+    grepl("Arm 1:", redcap_event_name) &
+      grepl("Seguimento", atend_espe_psico_qnd) &
+      if_any(
+        c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1), 
+        \(x) x %in% "Sim")
   ) |>
   mutate(
     atend_psi = case_when(
