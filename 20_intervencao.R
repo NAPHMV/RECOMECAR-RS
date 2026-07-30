@@ -610,7 +610,7 @@ interv_sa_perda_ids <- df |>
 interv_sa_perda_n <- length(interv_sa_perda_ids)
 
 ### Não inicia ----
-interv_sa_naonicia_ids <- df |>
+interv_sa_naoinicia_ids <- df |>
   filter(
     record_id %in% interv_sa_perda_ant_ids &
       redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
@@ -619,10 +619,15 @@ interv_sa_naonicia_ids <- df |>
   ) |>
   distinct(record_id) |>
   pull()
-interv_sa_naonicia_n <- length(interv_sa_naonicia_ids)
+interv_sa_naoinicia_n <- length(interv_sa_naoinicia_ids)
 
-interv_sa_naonicia_str <- df |>
-  filter(record_id %in% interv_sa_naonicia_ids) |>
+interv_sa_naoinicia_str <- df |>
+  filter(record_id %in% interv_sa_naoinicia_ids) |>
+  # mutate(
+  #   motivo = if_else(tentativa_motivo_n_pros == "Critério de exclusão",
+  #                    paste0(tentativa_motivo_n_pros, ": ", tentativa_motivo_exclu),
+  #                    tentativa_motivo_n_pros)
+  # ) |>
   with(rstatix::freq_table(tentativa_motivo_n_pros)) |>
   arrange(group) |>
   mutate(linha = glue("{group} = {n}")) |>
@@ -938,13 +943,19 @@ interv_sa_aguard_convite_ids <- df |>
     df |>
       filter(
         redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
-          (is.na(tentativa_contato_realiz_1) |
+          (is.na(tentativa_contato_realiz_1) &
              is.na(tentativa_obs_1))
       ) |>
       distinct(record_id),
     by = "record_id"
   ) |>
   filter(!record_id %in% interv_sa_realiz_ids) |>
+  anti_join(
+    df |>
+      filter(desfecho_participante_interv == "Retirado") |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull()
 interv_sa_aguard_convite_n <- length(interv_sa_aguard_convite_ids)
 
@@ -954,7 +965,7 @@ interv_sa_aguard_agend_ids <- df |>
     !record_id %in% interv_sa_realiz_ids &
       !record_id %in% interv_sa_aguard_convite_ids &
       redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)") &
-      !(!is.na(tentativa_dta_agend_1) | !is.na(tentativa_obs_1))
+      (!is.na(tentativa_dta_agend_1) | !is.na(tentativa_obs_1))
   ) |>
   distinct(record_id) |>
   anti_join(
