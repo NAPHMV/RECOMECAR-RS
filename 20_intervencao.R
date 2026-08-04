@@ -577,17 +577,29 @@ interv_interromperam_str <- df |>
 ### Perda anterior ----
 interv_sa_perda_ant_ids <- df |>
   filter(
+    # Critério 0
+    record_id %in% tri_eleg_interv_ids &
+    # Critério 1
     !record_id %in% interv_sa_realiz_ids &
+      # Critério 2
     redcap_event_name %in% "Sessao de apresentação (Arm 1: Participantes)" &
+      # Critério 2A
       (!is.na(tentativa_motivo_n_pros) |
+         # Critério 2B
          (record_id %in% interv_interromperam_geral_ids &
-            !record_id %in% interv_sa_realiz_ids))
+            !record_id %in% interv_sa_realiz_ids) |
+         # Critério 2C
+         (if_any(
+           c(nao_comp_motivo_sa, nao_comp_motivo_reagend_sa_1, nao_comp_motivo_reagend_sa_2,
+             nao_comp_motivo_reagend_sa_3, nao_comp_motivo_reagend_sa_3_2),
+           \(x) !is.na(x) & x != "Participante reagendou"))) 
   ) |>
   distinct(record_id) |> pull()
 interv_sa_perda_ant_n <- length(interv_sa_perda_ant_ids)
 ### Perda posterior ----
 interv_sa_perda_post_ids <- df |>
   filter(
+    record_id %in% tri_eleg_interv_ids &
     !record_id %in% interv_s1_tent_iniciada_ids &
     redcap_event_name %in% "Sessao de apresentação (Arm 1: Participantes)" &
       ((!is.na(enc_sa_motivo) | enc_sa_superv_apto == "2 - Não") |
@@ -607,6 +619,7 @@ interv_sa_perda_n <- length(interv_sa_perda_ids)
 ### Não inicia ----
 interv_sa_naoinicia_ids <- df |>
   filter(
+    record_id %in% tri_eleg_interv_ids &
     record_id %in% interv_sa_perda_ant_ids &
       redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
       # if_any(starts_with("tentativa_contato_realiz_"), \(x) x == "Sim") &
@@ -644,6 +657,7 @@ interv_sa_exclusao_str <- df |>
 ### Elegível ----
 interv_sa_realiz_eleg_ids <- df |>
   filter(
+    record_id %in% tri_eleg_interv_ids &
     record_id %in% interv_sa_realiz_ids &
       !record_id %in% interv_sa_perda_ant_ids &
       !record_id %in% interv_sa_perda_post_ids
@@ -955,12 +969,255 @@ interv_sa_aguard_convite_ids <- df |>
 interv_sa_aguard_convite_n <- length(interv_sa_aguard_convite_ids)
 
 ### Aguardando 1o agendamento
+# interv_sa_aguard_agend_ids <- df |>
+#   filter(
+#     record_id %in% tri_eleg_interv_ids &
+#     !record_id %in% interv_sa_realiz_ids &
+#       !record_id %in% interv_sa_aguard_convite_ids &
+#       redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)") &
+#       (!is.na(tentativa_dta_agend_1) | !is.na(tentativa_obs_1))
+#   ) |>
+#   distinct(record_id) |>
+#   anti_join(
+#     df |>
+#       filter(
+#         redcap_event_name == "Desfecho (Arm 1: Participantes)",
+#         desfecho_participante_interv == "Retirado"
+#       ) |>
+#       distinct(record_id),
+#     by = "record_id"
+#   ) |>
+#   filter(!record_id %in% interv_sa_realiz_ids) |>
+#   pull(record_id)
+if (F) {
+  df |>
+    filter(
+      record_id %in% tri_eleg_interv_ids &
+        !record_id %in% interv_sa_realiz_ids &
+        !record_id %in% interv_sa_aguard_convite_ids &
+        redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)")
+    ) |>
+    mutate(
+      ultimo_preenchimento_tentativa = case_when(
+        is.na(tentativa_agendar_sessao_1)   ~ 0,
+        !is.na(tentativa_agendar_sessao_1) &
+          is.na(tentativa_agendar_sessao_2) ~ 1,
+        !is.na(tentativa_agendar_sessao_2) &
+          is.na(tentativa_agendar_sessao_3) ~ 2,
+        !is.na(tentativa_agendar_sessao_3) &
+          is.na(tentativa_agendar_sessao_4) ~ 3,
+        !is.na(tentativa_agendar_sessao_4) &
+          is.na(tentativa_agendar_sessao_5) ~ 4,
+        !is.na(tentativa_agendar_sessao_5) &
+          is.na(tentativa_agendar_sessao_6) ~ 5,
+        !is.na(tentativa_agendar_sessao_6)  ~ 6,
+        TRUE ~ NA
+      ),
+      ultimo_preenchimento_consent = case_when(
+        comparecimento_sa == "Sim" & is.na(comparecimento_reagend_sa_1) ~ 0,
+        comparecimento_sa == "Não" & is.na(comparecimento_reagend_sa_1) ~ 1,
+        comparecimento_reagend_sa_1 == "Não" & is.na(comparecimento_reagend_sa_2) ~ 2,
+        comparecimento_reagend_sa_2 == "Não" & is.na(comparecimento_reagend_sa_3) ~ 3,
+        TRUE ~ NA
+      )
+    ) |>
+    filter(ultimo_preenchimento_tentativa > 0) |>
+    # 1. Extrai a data correspondente de acordo com o último preenchimento
+    mutate(
+      dta_tentativa = case_when(
+        ultimo_preenchimento_tentativa == 1 ~ as.Date(tentativa_dta_agend_1),
+        ultimo_preenchimento_tentativa == 2 ~ as.Date(tentativa_dta_agend_2),
+        ultimo_preenchimento_tentativa == 3 ~ as.Date(tentativa_dta_agend_3),
+        ultimo_preenchimento_tentativa == 4 ~ as.Date(tentativa_dta_agend_4),
+        ultimo_preenchimento_tentativa == 5 ~ as.Date(tentativa_dta_agend_5),
+        ultimo_preenchimento_tentativa == 6 ~ as.Date(tentativa_dta_agend_6),
+        TRUE ~ as.Date(NA)
+      ),
+      dta_consent = case_when(
+        ultimo_preenchimento_consent == 0 ~ as.Date(dta_sessao_a),
+        ultimo_preenchimento_consent == 1 ~ as.Date(data_reagend_sa_1),
+        ultimo_preenchimento_consent == 2 ~ as.Date(data_reagend_sa_2),
+        ultimo_preenchimento_consent == 3 ~ as.Date(data_reagend_sa_3),
+        TRUE ~ as.Date(NA)
+      ),
+      # Consolida a data final (dá prioridade para consentimento; se for NA, usa a tentativa)
+      ultima_dta_agendamento = coalesce(dta_consent, dta_tentativa)
+    ) |>
+    # 2. Filtra apenas registros com data válida E onde a data é menor ou igual a HOJE
+    filter(
+      !is.na(ultima_dta_agendamento) & 
+        ultima_dta_agendamento > Sys.Date()
+    ) |>
+    select(
+      record_id, 
+      ultimo_preenchimento_tentativa, 
+      ultimo_preenchimento_consent, 
+      ultima_dta_agendamento,
+      contains("tentativa_dta_agend"), 
+      contains("tentativa_agendar_sessao_")
+    ) |>
+    View()
+}
+
 interv_sa_aguard_agend_ids <- df |>
   filter(
-    !record_id %in% interv_sa_realiz_ids &
+    record_id %in% tri_eleg_interv_ids &
+      !record_id %in% interv_sa_realiz_ids &
       !record_id %in% interv_sa_aguard_convite_ids &
-      redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)") &
-      (!is.na(tentativa_dta_agend_1) | !is.na(tentativa_obs_1))
+      redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)")
+  ) |>
+  mutate(
+    ultimo_preenchimento_tentativa = case_when(
+      is.na(tentativa_agendar_sessao_1)   ~ 0,
+      !is.na(tentativa_agendar_sessao_1) &
+        is.na(tentativa_agendar_sessao_2) ~ 1,
+      !is.na(tentativa_agendar_sessao_2) &
+        is.na(tentativa_agendar_sessao_3) ~ 2,
+      !is.na(tentativa_agendar_sessao_3) &
+        is.na(tentativa_agendar_sessao_4) ~ 3,
+      !is.na(tentativa_agendar_sessao_4) &
+        is.na(tentativa_agendar_sessao_5) ~ 4,
+      !is.na(tentativa_agendar_sessao_5) &
+        is.na(tentativa_agendar_sessao_6) ~ 5,
+      !is.na(tentativa_agendar_sessao_6)  ~ 6,
+      TRUE ~ NA
+    ),
+    ultimo_preenchimento_consent = case_when(
+      comparecimento_sa == "Sim" & is.na(comparecimento_reagend_sa_1) ~ 0,
+      comparecimento_sa == "Não" & is.na(comparecimento_reagend_sa_1) ~ 1,
+      comparecimento_reagend_sa_1 == "Não" & is.na(comparecimento_reagend_sa_2) ~ 2,
+      comparecimento_reagend_sa_2 == "Não" & is.na(comparecimento_reagend_sa_3) ~ 3,
+      TRUE ~ NA
+    )
+  ) |>
+  filter(ultimo_preenchimento_tentativa > 0) |>
+  # 1. Extrai a data correspondente de acordo com o último preenchimento
+  mutate(
+    dta_tentativa = case_when(
+      ultimo_preenchimento_tentativa == 1 ~ as.Date(tentativa_dta_agend_1),
+      ultimo_preenchimento_tentativa == 2 ~ as.Date(tentativa_dta_agend_2),
+      ultimo_preenchimento_tentativa == 3 ~ as.Date(tentativa_dta_agend_3),
+      ultimo_preenchimento_tentativa == 4 ~ as.Date(tentativa_dta_agend_4),
+      ultimo_preenchimento_tentativa == 5 ~ as.Date(tentativa_dta_agend_5),
+      ultimo_preenchimento_tentativa == 6 ~ as.Date(tentativa_dta_agend_6),
+      TRUE ~ as.Date(NA)
+    ),
+    dta_consent = case_when(
+      ultimo_preenchimento_consent == 0 ~ as.Date(dta_sessao_a),
+      ultimo_preenchimento_consent == 1 ~ as.Date(data_reagend_sa_1),
+      ultimo_preenchimento_consent == 2 ~ as.Date(data_reagend_sa_2),
+      ultimo_preenchimento_consent == 3 ~ as.Date(data_reagend_sa_3),
+      TRUE ~ as.Date(NA)
+    ),
+    # Consolida a data final (dá prioridade para consentimento; se for NA, usa a tentativa)
+    ultima_dta_agendamento = coalesce(dta_consent, dta_tentativa)
+  ) |>
+  # 2. Filtra apenas registros com data válida E onde a data é menor ou igual a HOJE
+  filter(
+    !is.na(ultima_dta_agendamento) & 
+      ultima_dta_agendamento < Sys.Date()
+  ) |>
+  distinct(record_id) |>
+  anti_join(
+        df |>
+          filter(
+            redcap_event_name == "Desfecho (Arm 1: Participantes)",
+            desfecho_participante_interv == "Retirado"
+          ) |>
+          distinct(record_id),
+        by = "record_id"
+      ) |>
+  pull(record_id)
+interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
+
+## Aguardando sessão
+interv_sa_aguardando_cols <- grep("^tentativa_agendar_sessao_", names(df), value = TRUE)
+interv_sa_aguardando_cols <- interv_sa_aguardando_cols[
+  order(as.integer(stringr::str_extract(interv_sa_aguardando_cols, "\\d+$")))]
+
+# interv_sa_aguard_ids <- df |>
+#   filter(
+#     redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
+#     !record_id %in% interv_sa_realiz_ids,
+#     # if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
+#     if_any(tentativa_agendar_sessao_1:tentativa_agendar_sessao_6, \(x) x %in% "Sim")
+#   ) |>
+#   rowwise() |>
+#   mutate(
+#     ultima_tentativa_val = {
+#       vals <- c_across(all_of(interv_sa_aguardando_cols))
+#       idx  <- max(which(!is.na(vals)), na.rm = TRUE)  # índice do último não-NA
+#       if (is.finite(idx)) vals[idx] else NA_character_
+#     }
+#   ) |>
+#   ungroup() |>
+#   select(record_id, ultima_tentativa_val) |>
+#   distinct(record_id) |>
+#   anti_join(
+#     df |>
+#       filter(desfecho_participante_interv == "Retirado") |>
+#       distinct(record_id),
+#     by = "record_id"
+#   ) |>
+#   pull()
+interv_sa_aguard_ids <- df |>
+  filter(
+    record_id %in% tri_eleg_interv_ids &
+      !record_id %in% interv_sa_realiz_ids &
+      !record_id %in% interv_sa_aguard_convite_ids &
+      !record_id %in% interv_sa_aguard_agend_ids &
+      redcap_event_name == glue::glue("Sessao de apresentação (Arm 1: Participantes)")
+  ) |>
+  mutate(
+    ultimo_preenchimento_tentativa = case_when(
+      is.na(tentativa_agendar_sessao_1)   ~ 0,
+      !is.na(tentativa_agendar_sessao_1) &
+        is.na(tentativa_agendar_sessao_2) ~ 1,
+      !is.na(tentativa_agendar_sessao_2) &
+        is.na(tentativa_agendar_sessao_3) ~ 2,
+      !is.na(tentativa_agendar_sessao_3) &
+        is.na(tentativa_agendar_sessao_4) ~ 3,
+      !is.na(tentativa_agendar_sessao_4) &
+        is.na(tentativa_agendar_sessao_5) ~ 4,
+      !is.na(tentativa_agendar_sessao_5) &
+        is.na(tentativa_agendar_sessao_6) ~ 5,
+      !is.na(tentativa_agendar_sessao_6)  ~ 6,
+      TRUE ~ NA
+    ),
+    ultimo_preenchimento_consent = case_when(
+      comparecimento_sa == "Sim" & is.na(comparecimento_reagend_sa_1) ~ 0,
+      comparecimento_sa == "Não" & is.na(comparecimento_reagend_sa_1) ~ 1,
+      comparecimento_reagend_sa_1 == "Não" & is.na(comparecimento_reagend_sa_2) ~ 2,
+      comparecimento_reagend_sa_2 == "Não" & is.na(comparecimento_reagend_sa_3) ~ 3,
+      TRUE ~ NA
+    )
+  ) |>
+  filter(ultimo_preenchimento_tentativa > 0) |>
+  # 1. Extrai a data correspondente de acordo com o último preenchimento
+  mutate(
+    dta_tentativa = case_when(
+      ultimo_preenchimento_tentativa == 1 ~ as.Date(tentativa_dta_agend_1),
+      ultimo_preenchimento_tentativa == 2 ~ as.Date(tentativa_dta_agend_2),
+      ultimo_preenchimento_tentativa == 3 ~ as.Date(tentativa_dta_agend_3),
+      ultimo_preenchimento_tentativa == 4 ~ as.Date(tentativa_dta_agend_4),
+      ultimo_preenchimento_tentativa == 5 ~ as.Date(tentativa_dta_agend_5),
+      ultimo_preenchimento_tentativa == 6 ~ as.Date(tentativa_dta_agend_6),
+      TRUE ~ as.Date(NA)
+    ),
+    dta_consent = case_when(
+      ultimo_preenchimento_consent == 0 ~ as.Date(dta_sessao_a),
+      ultimo_preenchimento_consent == 1 ~ as.Date(data_reagend_sa_1),
+      ultimo_preenchimento_consent == 2 ~ as.Date(data_reagend_sa_2),
+      ultimo_preenchimento_consent == 3 ~ as.Date(data_reagend_sa_3),
+      TRUE ~ as.Date(NA)
+    ),
+    # Consolida a data final (dá prioridade para consentimento; se for NA, usa a tentativa)
+    ultima_dta_agendamento = coalesce(dta_consent, dta_tentativa)
+  ) |>
+  # 2. Filtra apenas registros com data válida E onde a data é menor ou igual a HOJE
+  filter(
+    !is.na(ultima_dta_agendamento) & 
+      ultima_dta_agendamento >= Sys.Date()
   ) |>
   distinct(record_id) |>
   anti_join(
@@ -972,41 +1229,7 @@ interv_sa_aguard_agend_ids <- df |>
       distinct(record_id),
     by = "record_id"
   ) |>
-  filter(!record_id %in% interv_sa_realiz_ids) |>
   pull(record_id)
-interv_sa_aguard_agend_n <- length(interv_sa_aguard_agend_ids)
-
-
-## Aguardando sessão
-interv_sa_aguardando_cols <- grep("^tentativa_agendar_sessao_", names(df), value = TRUE)
-interv_sa_aguardando_cols <- interv_sa_aguardando_cols[
-  order(as.integer(stringr::str_extract(interv_sa_aguardando_cols, "\\d+$")))]
-
-interv_sa_aguard_ids <- df |>
-  filter(
-    redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
-    !record_id %in% interv_sa_realiz_ids,
-    # if_any(tentativa_contato_realiz_1:tentativa_contato_realiz_6,  \(x) x %in% "Sim"),
-    if_any(tentativa_agendar_sessao_1:tentativa_agendar_sessao_6, \(x) x %in% "Sim")
-  ) |>
-  rowwise() |>
-  mutate(
-    ultima_tentativa_val = {
-      vals <- c_across(all_of(interv_sa_aguardando_cols))
-      idx  <- max(which(!is.na(vals)), na.rm = TRUE)  # índice do último não-NA
-      if (is.finite(idx)) vals[idx] else NA_character_
-    }
-  ) |>
-  ungroup() |>
-  select(record_id, ultima_tentativa_val) |>
-  distinct(record_id) |>
-  anti_join(
-    df |>
-      filter(desfecho_participante_interv == "Retirado") |>
-      distinct(record_id),
-    by = "record_id"
-  ) |>
-  pull()
 interv_sa_aguard_n <- length(interv_sa_aguard_ids)
 
 

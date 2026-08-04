@@ -37,6 +37,7 @@ seg_manejo_tipo_tabela <- seg_manejo_tipo_df |>
     values_to = "atendeu"
   ) %>% 
   filter(atendeu == "Sim") %>% 
+  mutate(Especialista = as.factor(Especialista)) |>
   summarise(
     n_observado = n_distinct(ID),
     .by = Especialista
