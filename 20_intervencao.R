@@ -1087,6 +1087,21 @@ interv_sa_aguard_agend_ids <- df |>
       !is.na(tentativa_agendar_sessao_6)  ~ 6,
       TRUE ~ NA
     ),
+    ultimo_preenchimento_agend = case_when(
+      is.na(tentativa_agendar_sessao_1)   ~ 0,
+      !is.na(tentativa_agendar_sessao_1) &
+        is.na(tentativa_agendar_sessao_2) ~ 1,
+      !is.na(tentativa_agendar_sessao_2) &
+        is.na(tentativa_agendar_sessao_3) ~ 2,
+      !is.na(tentativa_agendar_sessao_3) &
+        is.na(tentativa_agendar_sessao_4) ~ 3,
+      !is.na(tentativa_agendar_sessao_4) &
+        is.na(tentativa_agendar_sessao_5) ~ 4,
+      !is.na(tentativa_agendar_sessao_5) &
+        is.na(tentativa_agendar_sessao_6) ~ 5,
+      !is.na(tentativa_agendar_sessao_6)  ~ 6,
+      TRUE ~ NA
+    ),
     ultimo_preenchimento_consent = case_when(
       comparecimento_sa == "Sim" & is.na(comparecimento_reagend_sa_1) ~ 0,
       comparecimento_sa == "Não" & is.na(comparecimento_reagend_sa_1) ~ 1,
@@ -1099,6 +1114,15 @@ interv_sa_aguard_agend_ids <- df |>
   # 1. Extrai a data correspondente de acordo com o último preenchimento
   mutate(
     dta_tentativa = case_when(
+      ultimo_preenchimento_tentativa == 1 ~ as.Date(tentativa_dta_1),
+      ultimo_preenchimento_tentativa == 2 ~ as.Date(tentativa_dta_2),
+      ultimo_preenchimento_tentativa == 3 ~ as.Date(tentativa_dta_3),
+      ultimo_preenchimento_tentativa == 4 ~ as.Date(tentativa_dta_4),
+      ultimo_preenchimento_tentativa == 5 ~ as.Date(tentativa_dta_5),
+      ultimo_preenchimento_tentativa == 6 ~ as.Date(tentativa_dta_6),
+      TRUE ~ as.Date(NA)
+    ),
+    dta_agend = case_when(
       ultimo_preenchimento_tentativa == 1 ~ as.Date(tentativa_dta_agend_1),
       ultimo_preenchimento_tentativa == 2 ~ as.Date(tentativa_dta_agend_2),
       ultimo_preenchimento_tentativa == 3 ~ as.Date(tentativa_dta_agend_3),
@@ -1115,12 +1139,12 @@ interv_sa_aguard_agend_ids <- df |>
       TRUE ~ as.Date(NA)
     ),
     # Consolida a data final (dá prioridade para consentimento; se for NA, usa a tentativa)
-    ultima_dta_agendamento = coalesce(dta_consent, dta_tentativa)
+    ultima_dta_agendamento = coalesce(dta_consent, dta_agend, dta_tentativa)
   ) |>
   # 2. Filtra apenas registros com data válida E onde a data é menor ou igual a HOJE
   filter(
     !is.na(ultima_dta_agendamento) & 
-      ultima_dta_agendamento < Sys.Date()
+      as.Date(ultima_dta_agendamento) < as.Date(Sys.Date())
   ) |>
   distinct(record_id) |>
   anti_join(
