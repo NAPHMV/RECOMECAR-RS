@@ -40,17 +40,20 @@ interv_sessoes_excluidos_ids <- df |>
 
 ## df --------------------------------------------------
 interv_andamento_resumo <- tibble(
-  sessao = rep(colnames(interv_sessoes_realiz), 5),
+  sessao = rep(colnames(interv_sessoes_realiz), 6),
   var = c(
     rep("Finalizada e elegível",7), 
+    rep("Aguardando convite", 7),
     rep("Perda anterior à sessão",7), rep("Perda posterior à sessão",7), 
-    rep("Aguardando sessão", 7), rep("Sem primeiro agendamento", 7)),
+    rep("Aguardando sessão", 7), rep("Em processo de convite", 7)),
   value = c(
     # Realizada e seguiu
     # as.numeric(t(interv_sessoes_realiz)),
     c(interv_sa_realiz_eleg_n, interv_s1_realiz_eleg_n, interv_s2_realiz_eleg_n,
       interv_s3_realiz_eleg_n, interv_s4_realiz_eleg_n, interv_s5_realiz_eleg_n,
       interv_sf_realiz_eleg_n),
+    # Aguardando convite
+    c(interv_sa_aguard_convite_n, rep(NA, 6)),
     # Perda anterior
     c(interv_sa_perda_ant_n, interv_s1_perda_ant_n, interv_s2_perda_ant_n, interv_s3_perda_ant_n,
       interv_s4_perda_ant_n, interv_s5_perda_ant_n, interv_sf_perda_ant_n),
@@ -71,8 +74,8 @@ interv_andamento_resumo <- tibble(
     sessao = fct_relevel(as.factor(sessao), "Sessão A", "Sessão 1", "Sessão 2", "Sessão 3", "Sessão 4", "Sessão 5", "Sessão Final"),
     var    = fct_relevel(
       as.factor(var), 
-      "Perda anterior à sessão", "Perda posterior à sessão", 
-      "Sem primeiro agendamento", "Aguardando sessão", "Finalizada e elegível")
+      "Aguardando convite", "Perda anterior à sessão", "Perda posterior à sessão", 
+      "Em processo de convite", "Aguardando sessão", "Finalizada e elegível")
   )
 
 
