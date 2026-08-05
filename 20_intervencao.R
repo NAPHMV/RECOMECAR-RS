@@ -592,9 +592,14 @@ interv_sa_perda_ant_ids <- df |>
          (if_any(
            c(nao_comp_motivo_sa, nao_comp_motivo_reagend_sa_1, nao_comp_motivo_reagend_sa_2,
              nao_comp_motivo_reagend_sa_3, nao_comp_motivo_reagend_sa_3_2),
-           \(x) !is.na(x) & x != "Participante reagendou"))) 
+           \(x) !is.na(x) & x != "Participante reagendou")) |
+         # Critério 2D
+         (consent_adol == "Não autorizo a gravação da minha imagem e/ou voz" | 
+            consent_resp == "Não autorizo a gravação de imagem e/ou voz do adolescente pelo qual sou responsável")
+      ) 
   ) |>
-  distinct(record_id) |> pull()
+  distinct(record_id) |> 
+  pull()
 interv_sa_perda_ant_n <- length(interv_sa_perda_ant_ids)
 ### Perda posterior ----
 interv_sa_perda_post_ids <- df |>
@@ -621,9 +626,9 @@ interv_sa_naoinicia_ids <- df |>
   filter(
     record_id %in% tri_eleg_interv_ids &
     record_id %in% interv_sa_perda_ant_ids &
-      redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
+      redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" #&
       # if_any(starts_with("tentativa_contato_realiz_"), \(x) x == "Sim") &
-      !is.na(tentativa_motivo_n_pros)
+      # !is.na(tentativa_motivo_n_pros)
   ) |>
   distinct(record_id) |>
   pull()
@@ -952,8 +957,8 @@ interv_sa_aguard_convite_ids <- df |>
     df |>
       filter(
         redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" &
-          (is.na(tentativa_contato_realiz_1) &
-             is.na(tentativa_obs_1))
+          (is.na(tentativa_contato_realiz_1))# &
+             # is.na(tentativa_obs_1))
       ) |>
       distinct(record_id),
     by = "record_id"
@@ -1090,7 +1095,7 @@ interv_sa_aguard_agend_ids <- df |>
       TRUE ~ NA
     )
   ) |>
-  filter(ultimo_preenchimento_tentativa > 0) |>
+  filter(ultimo_preenchimento_tentativa > 0 | !is.na(tentativa_obs_1)) |>
   # 1. Extrai a data correspondente de acordo com o último preenchimento
   mutate(
     dta_tentativa = case_when(
