@@ -938,6 +938,15 @@ interv_sf_realiz_eleg_n <- length(interv_sf_realiz_eleg_ids)
 
 
 
+## Geral -------------------------------------------------
+interv_perda_ids <- c(
+  interv_sa_perda_ids, interv_s1_perda_ids, interv_s2_perda_ids,
+  interv_s3_perda_ids, interv_s4_perda_ids, interv_s5_perda_ids,
+  interv_sf_perda_ids)
+
+
+
+
 # Agardando ====================================================================
 ## Sessão A ----------------------------------------------------
 ### Aguardando convite

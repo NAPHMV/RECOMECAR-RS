@@ -71,47 +71,47 @@ interv_manejo_algum_enc_ids <- interv_manejo_enc |>
   distinct(record_id) |> 
   pull()
 interv_manejo_algum_enc_n <- length(interv_manejo_algum_enc_ids)
-  # interv_manejo_enc |>
-  # pivot_wider(id_cols = "record_id", names_from = "redcap_event_name", values_from = "encaminhado") |>
-  # filter(if_any(`Sessao de apresentação (Arm 1: Participantes)`:`Sessao final (Arm 1: Participantes)`, 
-  #               ~ . == "Sim")) |>
-  # distinct(record_id) |>
-  # filter(encaminhado == "Sim") |>
-  # distinct(record_id) |>
-  # nrow()
+# interv_manejo_enc |>
+# pivot_wider(id_cols = "record_id", names_from = "redcap_event_name", values_from = "encaminhado") |>
+# filter(if_any(`Sessao de apresentação (Arm 1: Participantes)`:`Sessao final (Arm 1: Participantes)`, 
+#               ~ . == "Sim")) |>
+# distinct(record_id) |>
+# filter(encaminhado == "Sim") |>
+# distinct(record_id) |>
+# nrow()
 
 
 
-## Algum atend ===================================================
+## Algum realizado ===================================================
 # interv_manejo_algum_realiz_ids <- df |>
 #   filter(record_id %in% interv_manejo_algum_enc_ids) |>
 interv_manejo_algum_realiz_ids <- df |>
-    filter(
-      redcap_event_name != "Triagem (Arm 1: Participantes)" &
-        !str_detect(redcap_event_name, "Seguimento") &
-        if_any(
-          c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),
-          \(x) x == "Sim")
-    ) |>
-    distinct(record_id) |>
-    pull()
-  # df |>
-  # filter(
-  #   redcap_event_name != "Triagem (Arm 1: Participantes)" &
-  #     !str_detect(agend_esp_momento_obs, "Seguimento") &
-  #     !str_detect(agend_esp_momento_obs, "Outro") &
-  #     (if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2,
-  #               atend_psiq_comp_atend_3, atend_psiq_comp_atend_4),
-  #             \(x) x == "Sim e realizou atendimento")) |
-  #     (if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2,
-  #               atend_assist_comp_atend_3, atend_assist_comp_atend_4),
-  #             \(x) x == "Sim e realizou atendimento")) |
-  #     (if_any(c(atend_psico_comp_atend_1, atend_psico_comp_atend_2,
-  #               atend_psico_comp_atend_3, atend_psico_comp_atend_4),
-  #             \(x) x == "Sim e realizou atendimento"))
-  # ) |>
-  # distinct(record_id) |>
-  # pull()
+  filter(
+    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+      !str_detect(redcap_event_name, "Seguimento") &
+      if_any(
+        c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),
+        \(x) x == "Sim")
+  ) |>
+  distinct(record_id) |>
+  pull()
+# df |>
+# filter(
+#   redcap_event_name != "Triagem (Arm 1: Participantes)" &
+#     !str_detect(agend_esp_momento_obs, "Seguimento") &
+#     !str_detect(agend_esp_momento_obs, "Outro") &
+#     (if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2,
+#               atend_psiq_comp_atend_3, atend_psiq_comp_atend_4),
+#             \(x) x == "Sim e realizou atendimento")) |
+#     (if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2,
+#               atend_assist_comp_atend_3, atend_assist_comp_atend_4),
+#             \(x) x == "Sim e realizou atendimento")) |
+#     (if_any(c(atend_psico_comp_atend_1, atend_psico_comp_atend_2,
+#               atend_psico_comp_atend_3, atend_psico_comp_atend_4),
+#             \(x) x == "Sim e realizou atendimento"))
+# ) |>
+# distinct(record_id) |>
+# pull()
 interv_manejo_algum_realiz_n <- length(interv_manejo_algum_realiz_ids)
 
 interv_manejo_algum_realiz_str <- glue(
@@ -158,11 +158,12 @@ interv_manejo_algum_realiz_str <- glue(
 interv_manejo_aguard_atend_ids <- df |>
   filter(
     record_id %in% interv_manejo_algum_enc_ids &
+      !record_id %in% interv_perda_ids &
       (enc_sessao_superv_apto == "3 - Aguardando atendimento especializado" |
          enc_sa_superv_apto == "3 - Aguardando atendimento especializado")
   ) |>
   distinct(record_id) |>
-  nrow()
+  pull()
 
 interv_manejo_aguard_atend_n <- length(interv_manejo_aguard_atend_ids) 
 interv_manejo_aguard_atend_str <- glue::glue(
@@ -172,9 +173,11 @@ interv_manejo_aguard_atend_str <- glue::glue(
 
 ## Perdas ================================================================
 ### Falta de retorno ==============================================
-interv_manejo_retorno_n <- df |>
+interv_manejo_retorno_ids <- df |>
   filter(
-    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+    redcap_event_name == "Encaminhamentos (Arm 1: Participantes)" &
+      (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
+              \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))) &
       (if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2,
                 atend_psiq_comp_atend_3, atend_psiq_comp_atend_4),
               \(x) x == "Não atendeu")) |
@@ -186,9 +189,53 @@ interv_manejo_retorno_n <- df |>
               \(x) x == "Não atendeu"))
   ) |>
   distinct(record_id) |>
-  nrow()
+  full_join(
+    df |> 
+      filter(
+        if_any(c(atend_espe_psico_agend, atend_espe_psiq_agend, atend_espe_as_agend), 
+        \(x) x == "Não")
+      ) |> 
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  pull()
+
+interv_manejo_retorno_n <- length(interv_manejo_retorno_ids)
 interv_manejo_retorno_str <- glue(
   "{interv_manejo_retorno_n}/{interv_manejo_enc_n} ({round(100*interv_manejo_retorno_n/interv_manejo_enc_n, 2)} %)"
+)
+
+
+interv_manejo_retorno_mult_ids <- df |>
+  filter(
+    redcap_event_name == "Encaminhamentos (Arm 1: Participantes)" &
+      (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
+              \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))) &
+      (if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2,
+                atend_psiq_comp_atend_3, atend_psiq_comp_atend_4),
+              \(x) x == "Não atendeu")) |
+      (if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2,
+                atend_assist_comp_atend_3, atend_assist_comp_atend_4),
+              \(x) x == "Não atendeu")) |
+      (if_any(c(atend_psico_comp_atend_1, atend_psico_comp_atend_2,
+                atend_psico_comp_atend_3, atend_psico_comp_atend_4),
+              \(x) x == "Não atendeu"))
+  ) |>
+  select(record_id) |>
+  full_join(
+    df |> 
+      filter(
+        if_any(c(atend_espe_psico_agend, atend_espe_psiq_agend, atend_espe_as_agend), 
+               \(x) x == "Não")
+      ) |> 
+      select(record_id),
+    by = "record_id"
+  ) |>
+  pull()
+
+interv_manejo_retorno_mult_n <- length(interv_manejo_retorno_mult_ids)
+interv_manejo_retorno_multstr <- glue(
+  "{interv_manejo_retorno_multn}/{interv_manejo_enc_n} ({round(100*interv_manejo_retorno_multn/interv_manejo_enc_n, 2)} %)"
 )
 
 
@@ -258,30 +305,113 @@ interv_manejo_risco_nao_n <- interv_manejo_algum_realiz_n - interv_manejo_risco_
 interv_manejo_eleg_ids <- df |>
   filter(
     record_id %in% interv_manejo_algum_realiz_ids,
-    redcap_event_name != 'Triagem (Arm 1: Participantes)'
+    redcap_event_name != 'Triagem (Arm 1: Participantes)' &
+      !str_detect(redcap_event_name, "Seguimento")
   ) %>% 
   filter(
     enc_sa_superv_apto %in% "1 - Sim" |
       enc_sessao_superv_apto %in% "1 - Sim"
+  ) |>
+  select(record_id, redcap_event_name) |>
+  mutate(
+    redcap_event_name = case_when(
+      redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" ~ "Avaliação Inicial",
+      redcap_event_name == "Sessao 1 (Arm 1: Participantes)" ~ "Sessão 1",
+      redcap_event_name == "Sessao 2 (Arm 1: Participantes)" ~ "Sessão 2",
+      redcap_event_name == "Sessao 3 (Arm 1: Participantes)" ~ "Sessão 3",
+      redcap_event_name == "Sessao 4 (Arm 1: Participantes)" ~ "Sessão 4",
+      redcap_event_name == "Sessao 5 (Arm 1: Participantes)" ~ "Sessão 5",
+      redcap_event_name == "Sessao final (Arm 1: Participantes)" ~ "Sessão final",
+      TRUE ~ NA
+    )
+  ) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == "Encaminhamentos (Arm 1: Participantes)" &
+          (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
+                  \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))) &
+          if_any(c(atend_psico_prosseg, atend_psiq_prosseg, atend_assist_encam_prosseg),
+                 \(x) x == "Sim")
+      ) |>
+      select(record_id, atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd) |>
+      pivot_longer(cols = -record_id, names_to = "profissional", values_to = "momento") |>
+      filter(!is.na(momento)),
+    by = "record_id"
   ) |>
   distinct(record_id) |>
   pull()
 interv_manejo_eleg_n <- length(interv_manejo_eleg_ids)
 
 
+interv_manejo_eleg_mult_n <- df |>
+  filter(
+    record_id %in% interv_manejo_algum_realiz_ids,
+    redcap_event_name != 'Triagem (Arm 1: Participantes)' &
+      !str_detect(redcap_event_name, "Seguimento")
+  ) %>% 
+  filter(
+    enc_sa_superv_apto %in% "1 - Sim" |
+      enc_sessao_superv_apto %in% "1 - Sim"
+  ) |>
+  select(record_id, redcap_event_name) |>
+  mutate(
+    redcap_event_name = case_when(
+      redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)" ~ "Avaliação Inicial",
+      redcap_event_name == "Sessao 1 (Arm 1: Participantes)" ~ "Sessão 1",
+      redcap_event_name == "Sessao 2 (Arm 1: Participantes)" ~ "Sessão 2",
+      redcap_event_name == "Sessao 3 (Arm 1: Participantes)" ~ "Sessão 3",
+      redcap_event_name == "Sessao 4 (Arm 1: Participantes)" ~ "Sessão 4",
+      redcap_event_name == "Sessao 5 (Arm 1: Participantes)" ~ "Sessão 5",
+      redcap_event_name == "Sessao final (Arm 1: Participantes)" ~ "Sessão final",
+      TRUE ~ NA
+    )
+  ) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == "Encaminhamentos (Arm 1: Participantes)" &
+          (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
+                  \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))) &
+          if_any(c(atend_psico_prosseg, atend_psiq_prosseg, atend_assist_encam_prosseg),
+                 \(x) x == "Sim")
+      ) |>
+      select(record_id, atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd) |>
+      pivot_longer(cols = -record_id, names_to = "profissional", values_to = "momento") |>
+      filter(!is.na(momento)),
+    by = "record_id"
+  ) |>
+  nrow()
+
+
 ## Não elegíveis  ----------------------------------------------
 interv_manejo_nao_eleg_ids <- df |>
   filter(
-    record_id %in% interv_manejo_algum_realiz_ids,
-    redcap_event_name != 'Triagem (Arm 1: Participantes)'
+    record_id %in% interv_manejo_algum_realiz_ids &
+      redcap_event_name != 'Triagem (Arm 1: Participantes)' &
+      !str_detect(redcap_event_name, "Seguimento")
   ) %>% 
+  # Avaliação com Supervisor
   filter(
     enc_sa_superv_apto %in% "2 - Não" |
       enc_sessao_superv_apto %in% "2 - Não"
   ) |>
   distinct(record_id) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == "Encaminhamentos (Arm 1: Participantes)" &
+          (str_detect(atend_espe_psico_qnd, "Sessão") |
+             atend_espe_psico_qnd == "Avaliação Inicial") &
+          if_any(c(atend_psico_prosseg, atend_psiq_prosseg, atend_assist_encam_prosseg),
+                 \(x) x == "Não")
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull()
 interv_manejo_nao_eleg_n <- length(interv_manejo_nao_eleg_ids)
+
 
 
 ## Motivo encaminhamento ---------------------------------------
