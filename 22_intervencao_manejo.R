@@ -60,7 +60,15 @@ interv_manejo_sf_enc <- df |>
 interv_manejo_enc <- bind_rows(
   interv_manejo_sa_enc, interv_manejo_s1_enc, interv_manejo_s2_enc, interv_manejo_s3_enc, interv_manejo_s4_enc,
   interv_manejo_s5_enc, interv_manejo_sf_enc
-)
+) |>
+  full_join(
+    df |>
+      filter(str_detect(redcap_event_name, "Sessao") &
+               if_any(c(enc_sa_superv, enc_sessao_superv), \(x) x == "Sim")) |>
+      mutate(encaminhado = "Sim") |>
+      distinct(record_id, encaminhado),
+    by = c("record_id", "encaminhado")
+  )
 interv_manejo_enc_n <- interv_manejo_enc |>
   filter(encaminhado == "Sim") |>
   nrow()
@@ -88,10 +96,13 @@ interv_manejo_algum_enc_n <- length(interv_manejo_algum_enc_ids)
 interv_manejo_algum_realiz_ids <- df |>
   filter(
     redcap_event_name != "Triagem (Arm 1: Participantes)" &
-      !str_detect(redcap_event_name, "Seguimento") &
       if_any(
         c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),
-        \(x) x == "Sim")
+        \(x) x == "Sim") &
+      if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
+              \(x) !str_detect(x, "Seguimento"))
+      # (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
+      #         \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial")))
   ) |>
   distinct(record_id) |>
   pull()
@@ -151,8 +162,18 @@ interv_manejo_algum_realiz_str <- glue(
 #   distinct(ID) |>
 #   pull()
 # interv_manejo_algum_realiz_n <- length(interv_manejo_algum_realiz_ids)
-
-
+interv_manejo_realiz_n <- df |>
+  filter(
+    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+      !str_detect(redcap_event_name, "Arm 2") &
+      if_any(
+        c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),
+        \(x) x == "Sim") #&
+    # (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
+    #         \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial")))
+  ) |>
+  nrow()
+  
 
 ## Aguardando atendimento ===============================================
 interv_manejo_aguard_atend_ids <- df |>

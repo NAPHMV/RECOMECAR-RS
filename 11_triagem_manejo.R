@@ -23,6 +23,7 @@ tri_manejo_enc_ids <- df |>
 tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 
 
+
 # ## Aguardando atendimento ------------------------------------
 # tri_ids_aguard_atend <- df |>
 #   filter(
@@ -73,12 +74,15 @@ tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 
 
 
-## Realizadas ------------------------------------------------
+## Algum realizado ------------------------------------------------
 ### n Participantes com algum atendimento realizado
 # n_tri_manejo_realiz <- glue("{tri_manejo_nao_eleg + tri_manejo_eleg}")
 tri_manejo_algum_realiz_ids <- df |>
   # filter(record_id %in% c(triagem_manejo_eleg_ids, triagem_manejo_nao_eleg_ids)) |>
-  filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
+  filter(
+    redcap_event_name == 'Triagem (Arm 1: Participantes)' &
+      record_id %in% tri_manejo_enc_ids
+  ) %>% 
   select(record_id, 
          ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3,
          atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
@@ -110,7 +114,6 @@ tri_manejo_algum_realiz_ids <- df |>
   filter(atendeu == "Sim") |>
   distinct(ID) |>
   pull()
-
 tri_manejo_algum_realiz_n <- length(tri_manejo_algum_realiz_ids)
 
 
@@ -135,18 +138,6 @@ tri_manejo_algum_realiz_n <- length(tri_manejo_algum_realiz_ids)
 # nrow()
 # tri_manejo_algum_realiz_n <- glue::glue("{tri_manejo_algum_realiz_n}/{tri_manejo_enc_n} ({round(100*tri_manejo_algum_realiz_n/tri_manejo_enc_n, 2)} %)")
 
-tri_manejo_realiz_n <- df |>
-  select(
-    record_id, redcap_event_name, redcap_repeat_instance,
-    atend_psiq_checklist_1, atend_assist_checklist_1
-  ) |>
-  # filter(redcap_event_name == "Triagem (Arm 1: Participantes)") |>
-  summarise(
-    realizados = sum(atend_psiq_checklist_1 == "Sim", na.rm = TRUE) + 
-      sum(atend_assist_checklist_1 == "Sim", na.rm = TRUE)
-  ) |>
-  pull()
-
 
 
 ## Perdas --------------------------------------------------
@@ -157,7 +148,7 @@ tri_manejo_desist_ids <- df |>
   filter(
     # (fez_enc_manejo_superv == "Sim" & is.na(ev_manejo_superv)) |
     redcap_event_name == "Triagem (Arm 1: Participantes)" &
-    (atend_psiq_checklist_1 == "Não" | atend_assist_checklist_1 == "Não")
+      (atend_psiq_checklist_1 == "Não" | atend_assist_checklist_1 == "Não")
   ) |>
   distinct(record_id) |>
   pull()
@@ -170,17 +161,16 @@ tri_manejo_desist_n <- glue(
 ### Falta de retorno --------------------------------------
 tri_manejo_retorno_ids <- df |>
   filter(
-    redcap_event_name == "Triagem (Arm 1: Participantes)" &
-      (
-        if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
-                 atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
-               \(x) x %in% "Não atendeu") |
-          if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
-                   atend_assist_comp_atend_3,atend_assist_comp_atend_4),
-                 \(x) x %in% "Não atendeu")
-      ) 
-    # TO-DO: adicionar falta de retorno do atendimento com psicólogo
-    # via form Desfecho
+    record_id %in% tri_manejo_enc_ids &
+      (redcap_event_name == "Triagem (Arm 1: Participantes)" &
+         (
+           if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
+                    atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
+                  \(x) x %in% "Não atendeu") |
+             if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
+                      atend_assist_comp_atend_3,atend_assist_comp_atend_4),
+                    \(x) x %in% "Não atendeu")
+         ))
   ) |>
   distinct(record_id) |>
   pull()
@@ -192,12 +182,35 @@ tri_manejo_retorno_str <- glue(
 )
 
 
+### Geral ------------------------------------------------
+tri_manejo_perda_ids <- df |>
+  filter(
+    (record_id %in% tri_manejo_enc_ids) &
+      (!record_id %in% tri_manejo_algum_realiz_ids) &
+      (
+        (redcap_event_name == "Triagem (Arm 1: Participantes)" &
+           (
+             if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
+                      atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
+                    \(x) x %in% "Não atendeu") |
+               if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
+                        atend_assist_comp_atend_3,atend_assist_comp_atend_4),
+                      \(x) x %in% "Não atendeu")
+           )) |
+          (if_any(c(desfecho_participante_motivo_exclu_interv___1,
+                    desfecho_participante_motivo_exclu_interv___2),
+                  \(x) x == "Checked")))
+  ) |>
+  distinct(record_id) |>
+  pull()
+tri_manejo_perda_n <- length(tri_manejo_perda_ids)
+
 
 ## Aguardando atendimento ----------------------------------
 tri_manejo_aguard_atend_ids <- df |> 
   filter(
     record_id %in% tri_manejo_enc_ids &
-    !record_id %in% tri_manejo_algum_realiz_ids &
+      !record_id %in% tri_manejo_algum_realiz_ids &
       !record_id %in% interv_sa_realiz_ids
   ) |>
   distinct(record_id) |>
@@ -348,7 +361,9 @@ tri_manejo_motivo_str <- tri_manejo_motivo |>
 
 ## Tipo de atendimento =========================================================
 tri_manejo_tipo_tabela <- df %>% 
-  filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
+  filter(
+    record_id %in% tri_manejo_algum_realiz_ids &
+    redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
   select(record_id, ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3,
          atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
          atend_assist_comp_atend_1, atend_assist_comp_atend_2, atend_assist_comp_atend_3, atend_assist_comp_atend_4) %>% 
@@ -409,6 +424,13 @@ tri_manejo_tipo_str <- tri_manejo_tipo_tabela |>
   pull(linha) |>
   paste(collapse = "\n")
 
+
+
+## Realizados =================================================================
+tri_manejo_realiz_mult_n <- tri_manejo_tipo_tabela |>
+  mutate(n = as.integer(str_extract(`n (%)`, '^\\d+'))) |>
+  summarise(total = sum(n)) |>
+  pull()
 
 
 
