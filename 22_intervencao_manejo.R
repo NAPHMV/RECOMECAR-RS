@@ -234,8 +234,8 @@ interv_manejo_retorno_mult_ids <- df |>
   pull()
 
 interv_manejo_retorno_mult_n <- length(interv_manejo_retorno_mult_ids)
-interv_manejo_retorno_multstr <- glue(
-  "{interv_manejo_retorno_multn}/{interv_manejo_enc_n} ({round(100*interv_manejo_retorno_multn/interv_manejo_enc_n, 2)} %)"
+interv_manejo_retorno_mult_str <- glue(
+  "{interv_manejo_retorno_mult_n}/{interv_manejo_enc_n} ({round(100*interv_manejo_retorno_mult_n/interv_manejo_enc_n, 2)} %)"
 )
 
 
