@@ -25,18 +25,18 @@ facilit_seg_andamento_resumo <- df |>
       levels = c("3 meses", "6 meses", "9 meses", "12 meses")
     ),
     whodas_20_timestamp = case_when(
-      facilit_segue_estudo == "Sim" & 
-        !is.na(whodas_20_timestamp) ~ as.character(as.Date(whodas_20_timestamp)),
+      facilit_segue_estudo == "Não" ~ "Saiu do estudo",
       facilit_segue_estudo == "Sim" &
         is.na(whodas_20_timestamp)  ~ "Indisponível",
-      facilit_segue_estudo == "Não" ~ "Saiu do estudo",
+      facilit_segue_estudo == "Sim" & 
+        !is.na(whodas_20_timestamp) ~ as.character(as.Date(whodas_20_timestamp)),
       TRUE ~ NA
     )
   ) |>
   pivot_wider(id_cols = 'record_id', names_from = 'redcap_event_name', 
               values_from = 'whodas_20_timestamp', names_expand = TRUE) |>
   mutate(
-    `6 meses`  = if_else(`3 meses` == "Saiu do estudo", "", `3 meses`),
+    `6 meses`  = if_else(`3 meses` == "Saiu do estudo", "", `6 meses`),
     `9 meses`  = if_else(`6 meses` == "Saiu do estudo" | `6 meses` == "", "", `9 meses`),
     `12 meses` = if_else(`9 meses` == "Saiu do estudo" | `9 meses` == "", "", `12 meses`)
   ) |>
