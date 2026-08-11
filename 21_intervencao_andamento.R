@@ -97,15 +97,19 @@ interv_andamento_resumo <- tibble(
 
 
 # Tabela =====================================================================
-interv_andamento_tabela <- interv_andamento_df |>
-  select(record_id, matches("_realizada")) |>
-  summarise(
-    `Sessão A` = glue::glue("{sum(sessao_A_realizada, na.rm = TRUE)}/{tri_eleg_interv_n}"),
-    `Sessão 1` = glue::glue("{sum(sessao_1_realizada, na.rm = TRUE)}/{sum(sessao_A_realizada, na.rm = TRUE)}"),
-    `Sessão 2` = glue::glue("{sum(sessao_2_realizada, na.rm = TRUE)}/{sum(sessao_1_realizada, na.rm = TRUE)}"),
-    `Sessão 3` = glue::glue("{sum(sessao_3_realizada, na.rm = TRUE)}/{sum(sessao_2_realizada, na.rm = TRUE)}"),
-    `Sessão 4` = glue::glue("{sum(sessao_4_realizada, na.rm = TRUE)}/{sum(sessao_3_realizada, na.rm = TRUE)}"),
-    `Sessão 5` = glue::glue("{sum(sessao_5_realizada, na.rm = TRUE)}/{sum(sessao_4_realizada, na.rm = TRUE)}"),
-    `Sessão Final` = glue::glue("{sum(sessao_final_realizada, na.rm = TRUE)}/{sum(sessao_5_realizada, na.rm = TRUE)}")
-  )
+interv_andamento_tabela <- interv_andamento_resumo |> 
+  filter(var == "Finalizada e elegível") |> 
+  pivot_wider(names_from = "sessao", values_from = 'value') |>
+  select(-var) |>
+  mutate(
+    `Sessão A_s` = glue::glue("{`Sessão A`}/{tri_eleg_interv_n}"),
+    `Sessão 1_s` = glue::glue("{`Sessão 1`}/{`Sessão A`}"),
+    `Sessão 2_s` = glue::glue("{`Sessão 2`}/{`Sessão 1`}"),
+    `Sessão 3_s` = glue::glue("{`Sessão 3`}/{`Sessão 2`}"),
+    `Sessão 4_s` = glue::glue("{`Sessão 4`}/{`Sessão 3`}"),
+    `Sessão 5_s` = glue::glue("{`Sessão 5`}/{`Sessão 4`}"),
+    `Sessão Final_s` = glue::glue("{`Sessão Final`}/{`Sessão 5`}")
+  ) |>
+  select(ends_with("_s")) |>
+  rename_with(~ stringr::str_remove(.x, "_s$"))
 

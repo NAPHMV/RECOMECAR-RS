@@ -74,49 +74,6 @@ tri_manejo_enc_n <- length(tri_manejo_enc_ids)
 
 
 
-## Algum realizado ------------------------------------------------
-### n Participantes com algum atendimento realizado
-# n_tri_manejo_realiz <- glue("{tri_manejo_nao_eleg + tri_manejo_eleg}")
-tri_manejo_algum_realiz_ids <- df |>
-  # filter(record_id %in% c(triagem_manejo_eleg_ids, triagem_manejo_nao_eleg_ids)) |>
-  filter(
-    redcap_event_name == 'Triagem (Arm 1: Participantes)' &
-      record_id %in% tri_manejo_enc_ids
-  ) %>% 
-  select(record_id, 
-         ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3,
-         atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
-         atend_assist_comp_atend_1, atend_assist_comp_atend_2, atend_assist_comp_atend_3, atend_assist_comp_atend_4) %>% 
-  mutate(
-    atend_psicologo = case_when(
-      if_any(c(ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3),
-             \(x) !is.na(x)) ~ 'Sim',
-      TRUE ~ 'Não'),
-    atend_psiquiatra = case_when(
-      if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, 
-               atend_psiq_comp_atend_3, atend_psiq_comp_atend_4), 
-             \(x) x == 'Sim e realizou atendimento') ~ "Sim",
-      TRUE ~ 'Não'),
-    atend_assit_social = case_when(
-      if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2, 
-               atend_assist_comp_atend_3, atend_assist_comp_atend_4), 
-             \(x) x == 'Sim e realizou atendimento') ~ "Sim",
-      TRUE ~ 'Não')
-  ) %>% 
-  select(record_id, atend_psicologo, atend_psiquiatra, atend_assit_social) %>% 
-  filter(atend_psicologo == 'Sim' | atend_psiquiatra == 'Sim' | atend_assit_social == 'Sim') %>% 
-  rename(ID = record_id, `Psicólogo Supervisor` = atend_psicologo, `Psiquiatra` = atend_psiquiatra, `Assistente Social` = atend_assit_social) |>
-  pivot_longer(
-    cols = -ID,
-    names_to = "Especialista",
-    values_to = "atendeu"
-  ) %>% 
-  filter(atendeu == "Sim") |>
-  distinct(ID) |>
-  pull()
-tri_manejo_algum_realiz_n <- length(tri_manejo_algum_realiz_ids)
-
-
 # tri_manejo_algum_realiz_n <- df |>
 #   filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
 #   filter(
@@ -185,25 +142,80 @@ tri_manejo_retorno_str <- glue(
 ### Geral ------------------------------------------------
 tri_manejo_perda_ids <- df |>
   filter(
-    (record_id %in% tri_manejo_enc_ids) &
-      (!record_id %in% tri_manejo_algum_realiz_ids) &
-      (
-        (redcap_event_name == "Triagem (Arm 1: Participantes)" &
-           (
-             if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
-                      atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
-                    \(x) x %in% "Não atendeu") |
-               if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
-                        atend_assist_comp_atend_3,atend_assist_comp_atend_4),
-                      \(x) x %in% "Não atendeu")
-           )) |
-          (if_any(c(desfecho_participante_motivo_exclu_interv___1,
-                    desfecho_participante_motivo_exclu_interv___2),
-                  \(x) x == "Checked")))
+    record_id %in% tri_manejo_enc_ids &
+      !record_id %in% interv_sa_realiz_ids &
+      desfecho_participante_interv == "Retirado" &
+      desfecho_participante_motivo_exclu_interv___4 != "Checked" &
+      desfecho_participante_motivo_exclu_interv___5 != "Checked"
   ) |>
   distinct(record_id) |>
   pull()
+
+# tri_manejo_perda_ids <- df |>
+#   filter(
+#     (record_id %in% tri_manejo_enc_ids) &
+#       (!record_id %in% tri_manejo_algum_realiz_ids) &
+#       (
+#         (redcap_event_name == "Triagem (Arm 1: Participantes)" &
+#            (
+#              if_any(c(atend_psiq_comp_atend_1,atend_psiq_comp_atend_2,
+#                       atend_psiq_comp_atend_3,atend_psiq_comp_atend_4),
+#                     \(x) x %in% "Não atendeu") |
+#                if_any(c(atend_assist_comp_atend_1,atend_assist_comp_atend_2,
+#                         atend_assist_comp_atend_3,atend_assist_comp_atend_4),
+#                       \(x) x %in% "Não atendeu")
+#            )) |
+#           (if_any(c(desfecho_participante_motivo_exclu_interv___1,
+#                     desfecho_participante_motivo_exclu_interv___2),
+#                   \(x) x == "Checked")))
+#   ) |>
+#   distinct(record_id) |>
+#   pull()
 tri_manejo_perda_n <- length(tri_manejo_perda_ids)
+
+
+## Algum realizado ------------------------------------------------
+### n Participantes com algum atendimento realizado
+# n_tri_manejo_realiz <- glue("{tri_manejo_nao_eleg + tri_manejo_eleg}")
+tri_manejo_algum_realiz_ids <- df |>
+  # filter(record_id %in% c(triagem_manejo_eleg_ids, triagem_manejo_nao_eleg_ids)) |>
+  filter(
+    redcap_event_name == 'Triagem (Arm 1: Participantes)' &
+      record_id %in% tri_manejo_enc_ids &
+      !record_id %in% tri_manejo_perda_ids
+  ) %>% 
+  select(record_id, 
+         ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3,
+         atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
+         atend_assist_comp_atend_1, atend_assist_comp_atend_2, atend_assist_comp_atend_3, atend_assist_comp_atend_4) %>% 
+  mutate(
+    atend_psicologo = case_when(
+      if_any(c(ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3),
+             \(x) !is.na(x)) ~ 'Sim',
+      TRUE ~ 'Não'),
+    atend_psiquiatra = case_when(
+      if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, 
+               atend_psiq_comp_atend_3, atend_psiq_comp_atend_4), 
+             \(x) x == 'Sim e realizou atendimento') ~ "Sim",
+      TRUE ~ 'Não'),
+    atend_assit_social = case_when(
+      if_any(c(atend_assist_comp_atend_1, atend_assist_comp_atend_2, 
+               atend_assist_comp_atend_3, atend_assist_comp_atend_4), 
+             \(x) x == 'Sim e realizou atendimento') ~ "Sim",
+      TRUE ~ 'Não')
+  ) %>% 
+  select(record_id, atend_psicologo, atend_psiquiatra, atend_assit_social) %>% 
+  filter(atend_psicologo == 'Sim' | atend_psiquiatra == 'Sim' | atend_assit_social == 'Sim') %>% 
+  rename(ID = record_id, `Psicólogo Supervisor` = atend_psicologo, `Psiquiatra` = atend_psiquiatra, `Assistente Social` = atend_assit_social) |>
+  pivot_longer(
+    cols = -ID,
+    names_to = "Especialista",
+    values_to = "atendeu"
+  ) %>% 
+  filter(atendeu == "Sim") |>
+  distinct(ID) |>
+  pull()
+tri_manejo_algum_realiz_n <- length(tri_manejo_algum_realiz_ids)
 
 
 ## Aguardando atendimento ----------------------------------
