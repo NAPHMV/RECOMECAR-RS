@@ -577,6 +577,7 @@ interv_interromperam_str <- df |>
 ### Perda anterior ----
 interv_sa_perda_ant_ids <- df |>
   filter(
+    record_id == '156' |
     # Critério 0
     record_id %in% tri_eleg_interv_ids &
     # Critério 1
@@ -635,13 +636,33 @@ interv_sa_naoinicia_ids <- df |>
 interv_sa_naoinicia_n <- length(interv_sa_naoinicia_ids)
 
 interv_sa_naoinicia_str <- df |>
-  filter(record_id %in% interv_sa_naoinicia_ids) |>
+  filter(
+    record_id %in% interv_sa_naoinicia_ids & !is.na(desfecho_participante_motivo_interv)
+  ) |>
+  distinct(record_id, desfecho_participante_motivo_interv) |>
   # mutate(
   #   motivo = if_else(tentativa_motivo_n_pros == "Critério de exclusão",
   #                    paste0(tentativa_motivo_n_pros, ": ", tentativa_motivo_exclu),
   #                    tentativa_motivo_n_pros)
   # ) |>
-  with(rstatix::freq_table(tentativa_motivo_n_pros)) |>
+  # with(rstatix::freq_table(tentativa_motivo_n_pros)) |>
+  left_join(
+    df |>
+      anti_join(
+        df |>
+          filter(record_id %in% interv_sa_naoinicia_ids &
+                   !is.na(desfecho_participante_motivo_interv)) |>
+          distinct(record_id),
+        by = "record_id") |>
+      filter(record_id %in% interv_sa_naoinicia_ids) |>
+      distinct(record_id, motivo = tentativa_motivo_n_pros) |>
+      filter(!is.na(motivo)),
+    by = "record_id"
+  ) |>
+  mutate(
+    motivo = coalesce(desfecho_participante_motivo_interv, motivo)
+  ) |>
+  with(rstatix::freq_table(motivo)) |>
   arrange(group) |>
   mutate(linha = glue("{group} = {n}")) |>
   pull(linha) |>

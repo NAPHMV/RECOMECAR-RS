@@ -62,7 +62,7 @@ tri_eleg_interv_ids <- df %>%
       TRUE ~ 0
     )
   ) |>
-  filter(partic_elegivel == 1) |>
+  filter(partic_elegivel == 1 | record_id == '308') |>
   distinct(record_id) |>
   anti_join(
     df |>
