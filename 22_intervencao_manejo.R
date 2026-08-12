@@ -4,7 +4,7 @@
 interv_manejo_sa_enc <- df |>
   filter(
     redcap_event_name == "Sessao de apresentação (Arm 1: Participantes)",
-    !is.na(enc_sa_atend_ind)
+      !is.na(enc_sa_atend_ind)
   ) |>
   select(record_id, redcap_event_name, encaminhado = enc_sa_atend_ind)
 
@@ -96,11 +96,13 @@ interv_manejo_algum_enc_n <- length(interv_manejo_algum_enc_ids)
 interv_manejo_algum_realiz_ids <- df |>
   filter(
     redcap_event_name != "Triagem (Arm 1: Participantes)" &
+      !str_detect(redcap_event_name, "Arm 2") &
+      record_id %in% interv_manejo_algum_enc_ids &
       if_any(
         c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),
-        \(x) x == "Sim") &
-      if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
-              \(x) !str_detect(x, "Seguimento"))
+        \(x) x == "Sim") #&
+      # if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
+      #         \(x) !str_detect(x, "Seguimento"))
       # (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
       #         \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial")))
   ) |>

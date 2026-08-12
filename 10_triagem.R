@@ -21,32 +21,32 @@ tri_nao_realiz_n <- df %>%
 
 
 # Sintomas ==========================================
-tri_sintomas_n <- df %>% 
+tri_sintomas_ids <- df %>% 
   filter(
-    redcap_event_name == 'Triagem (Arm 1: Participantes)',
-    record_id %in% tri_realiz_ids
-  ) %>% 
-  summarise(
-    com_sintomas = sum(calc_elegi_triagem == 1 | calc_elegi_triagem == 2, na.rm = TRUE)
+    redcap_event_name == 'Triagem (Arm 1: Participantes)' &
+      record_id %in% tri_realiz_ids &
+      (calc_elegi_triagem == 1 | calc_elegi_triagem == 2)
   ) |>
-  pull(com_sintomas)
+  distinct(record_id) |>
+  pull()
+tri_sintomas_n <- length(tri_sintomas_ids)
 
-tri_sintomas_sem_n <- df |>
+tri_sintomas_sem_ids <- df %>% 
   filter(
-    redcap_event_name == 'Triagem (Arm 1: Participantes)',
-    record_id %in% tri_realiz_ids
-  ) %>% 
-  summarise(
-    sem_sintomas = sum(calc_elegi_triagem == 0, na.rm = TRUE)
+    redcap_event_name == 'Triagem (Arm 1: Participantes)' &
+      record_id %in% tri_realiz_ids &
+      (calc_elegi_triagem == 0)
   ) |>
-  pull(sem_sintomas)
-
+  distinct(record_id) |>
+  pull()
+tri_sintomas_sem_n <- length(tri_sintomas_sem_ids)
 
 # Elegíveis Intervenção ===================================
 tri_eleg_interv_ids <- df %>% 
   filter(
-    redcap_event_name == 'Triagem (Arm 1: Participantes)',
-    record_id %in% tri_realiz_ids
+    redcap_event_name == 'Triagem (Arm 1: Participantes)' &
+      record_id %in% tri_realiz_ids &
+      record_id %in% tri_sintomas_ids
   ) %>% 
   mutate(
     partic_elegivel = case_when(
@@ -76,11 +76,23 @@ tri_eleg_interv_n <- length(tri_eleg_interv_ids)
 
 
 # Exclusões ==============================================
-tri_nao_aceitaram_n <- df |>
-  summarise(
-    triagem_nao_aceite = sum(aceita_particip == 'Não quero participar e não quero receber o contato da equipe', na.rm = TRUE)
+tri_nao_aceitaram_ids <- df |>
+  filter(
+    redcap_event_name == "Triagem (Arm 1: Participantes)" &
+      record_id %in% tri_sintomas_ids &
+      !record_id %in% tri_eleg_interv_ids &
+      fez_enc_manejo_superv == "Não" &
+      is.na(particip_eleg_continuidade)
   ) |>
-  pull(triagem_nao_aceite)
+  distinct(record_id) |>
+  pull()
+tri_nao_aceitaram_n <- length(tri_nao_aceitaram_ids)
+
+# tri_nao_aceitaram_n <- df |>
+#   summarise(
+#     triagem_nao_aceite = sum(aceita_particip == 'Não quero participar e não quero receber o contato da equipe', na.rm = TRUE)
+#   ) |>
+#   pull(triagem_nao_aceite)
 
 tri_exclusoes <- tibble(
   motivo = "Não aceitaram", n = tri_nao_aceitaram_n
