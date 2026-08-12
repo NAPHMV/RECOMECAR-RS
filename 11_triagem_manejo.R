@@ -14,7 +14,6 @@ tri_manejo_enc_ids <- df |>
   filter(
     redcap_event_name == 'Triagem (Arm 1: Participantes)' &
       (fez_enc_manejo_superv == "Sim" |
-         !is.na(atend_psico_dados) |
          !is.na(atend_psqi_dados) |
          !is.na(atend_assist_dados))
   ) |>
@@ -140,11 +139,59 @@ tri_manejo_retorno_str <- glue(
 
 
 ### Geral ------------------------------------------------
+# 1 
+# desfecho_participante_motivo_exclu_interv___4 != "Checked" &
+# desfecho_participante_motivo_exclu_interv___5 != "Checked"
+# 2 
+# ((desfecho_participante_motivo_exclu_interv___1 == "Checked" &
+# desfecho_participante_motivo_exclu_interv___2 == "Checked") |
+#   particip_eleg_continuidade == "Ausência de retorno ou recusa de atendimento")
+# 3
+# particip_eleg_continuidade == "Ausência de retorno ou recusa de atendimento"
+# 4
+# !particip_eleg_continuidade %in% c("Não", "Sim")
+
+#### Tentativa 1
+# tri_manejo_perda_ids <- df |>
+#   filter(
+#     record_id %in% tri_manejo_enc_ids &
+#       !record_id %in% interv_sa_tent_iniciada_ids &
+#       desfecho_participante_interv == "Retirado" &
+#       desfecho_participante_motivo_exclu_interv___4 != "Checked" &
+#       desfecho_participante_motivo_exclu_interv___5 != "Checked"
+#   ) |>
+#   distinct(record_id) |>
+#   full_join(
+#     df |>
+#       filter(
+#         record_id %in% tri_manejo_enc_ids &
+#           !record_id %in% interv_sa_tent_iniciada_ids &
+#           particip_eleg_continuidade == "Ausência de retorno ou recusa de atendimento"
+#       ) |>
+#       distinct(record_id),
+#     by = "record_id"
+#   ) |>
+#   pull()
+
+#### Tentativa 2
 tri_manejo_perda_ids <- df |>
   filter(
-    record_id %in% tri_manejo_enc_ids &
-      !record_id %in% interv_sa_realiz_ids &
-      desfecho_participante_interv == "Retirado" &
+    redcap_event_name == "Desfecho (Arm 1: Participantes)" &
+      record_id %in% tri_manejo_enc_ids &
+      !record_id %in% interv_sa_tent_iniciada_ids
+  ) |>
+  full_join(
+    df |>
+      filter(
+        record_id %in% tri_manejo_enc_ids &
+          !record_id %in% interv_sa_tent_iniciada_ids &
+          particip_eleg_continuidade == "Ausência de retorno ou recusa de atendimento"
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  filter(
+    desfecho_participante_interv == "Retirado" &
       desfecho_participante_motivo_exclu_interv___4 != "Checked" &
       desfecho_participante_motivo_exclu_interv___5 != "Checked"
   ) |>
@@ -185,13 +232,18 @@ tri_manejo_algum_realiz_ids <- df |>
       !record_id %in% tri_manejo_perda_ids
   ) %>% 
   select(record_id, 
+         particip_eleg_continuidade, particip_eleg_continuidade_1, particip_eleg_continuidade_2,
+         particip_eleg_continuidade_3,
          ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3,
          atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, atend_psiq_comp_atend_3, atend_psiq_comp_atend_4,
          atend_assist_comp_atend_1, atend_assist_comp_atend_2, atend_assist_comp_atend_3, atend_assist_comp_atend_4) %>% 
   mutate(
     atend_psicologo = case_when(
       if_any(c(ev_manejo_superv, ev_manejo_superv_1, ev_manejo_superv_2, ev_manejo_superv_3),
-             \(x) !is.na(x)) ~ 'Sim',
+             \(x) !is.na(x)) & 
+        if_any(c(particip_eleg_continuidade, particip_eleg_continuidade_1,
+                 particip_eleg_continuidade_2, particip_eleg_continuidade_3), 
+               \(x) x %in% c("Sim", "Não"))  ~ 'Sim',
       TRUE ~ 'Não'),
     atend_psiquiatra = case_when(
       if_any(c(atend_psiq_comp_atend_1, atend_psiq_comp_atend_2, 
@@ -223,6 +275,7 @@ tri_manejo_aguard_atend_ids <- df |>
   filter(
     record_id %in% tri_manejo_enc_ids &
       !record_id %in% tri_manejo_algum_realiz_ids &
+      !record_id %in% tri_manejo_perda_ids &
       !record_id %in% interv_sa_realiz_ids
   ) |>
   distinct(record_id) |>
@@ -444,6 +497,59 @@ tri_manejo_realiz_mult_n <- tri_manejo_tipo_tabela |>
   summarise(total = sum(n)) |>
   pull()
 
+
+## Elegíveis ===================================================================
+tri_manejo_eleg_interv_ids <- df |>
+  filter(
+    record_id %in% tri_manejo_algum_realiz_ids &
+      !record_id %in% tri_manejo_perda_ids &
+      (particip_eleg_continuidade == "Sim" |
+         particip_eleg_continuidade_1 == "Sim" |
+         particip_eleg_continuidade_2 == "Sim" |
+         particip_eleg_continuidade_3 == "Sim" |
+         record_id %in% interv_sa_realiz_ids |
+         record_id %in% interv_sa_tent_iniciada_ids)
+  ) |>
+  distinct(record_id) |>
+  pull()
+tri_manejo_eleg_interv_n <- length(tri_manejo_eleg_interv_ids)
+
+## Não Elegíveis ===============================================================
+tri_manejo_nao_eleg_interv_ids <- df |>
+  filter(
+    !record_id %in% interv_sa_tent_iniciada_ids &
+      record_id %in% tri_manejo_algum_realiz_ids &
+      !record_id %in% tri_manejo_perda_ids &
+      (particip_eleg_continuidade == "Não" |
+         particip_eleg_continuidade_1 == "Não" |
+         particip_eleg_continuidade_2 == "Não" |
+         particip_eleg_continuidade_3 == "Não")
+  ) |>
+  distinct(record_id) |>
+  pull()
+tri_manejo_nao_eleg_interv_n <- length(tri_manejo_nao_eleg_interv_ids)
+
+# Checks
+# tri_manejo_algum_realiz_n
+# tri_manejo_eleg_interv_n + tri_manejo_nao_eleg_interv_n
+# 
+# df |>
+#   filter(
+#     !record_id %in% interv_sa_realiz_ids &
+#     record_id %in% tri_manejo_algum_realiz_ids &
+#       !record_id %in% tri_manejo_perda_ids &
+#       !record_id %in% tri_manejo_eleg_interv_ids &
+#       !record_id %in% tri_manejo_nao_eleg_interv_ids
+#   ) |>
+#   distinct(record_id)
+# 
+# df |>
+#   filter(
+#     record_id %in% tri_manejo_algum_realiz_ids &
+#       !(record_id %in% tri_manejo_eleg_interv_ids |
+#           record_id %in% tri_manejo_nao_eleg_interv_ids)
+#   ) |>
+#   distinct(record_id)
 
 
 ## Tabela final ================================================================
