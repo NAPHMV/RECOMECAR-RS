@@ -186,6 +186,23 @@ interv_manejo_aguard_atend_ids <- df |>
          enc_sa_superv_apto == "3 - Aguardando atendimento especializado")
   ) |>
   distinct(record_id) |>
+  anti_join(
+    df |>
+      filter(
+        if_any(
+          c(particip_eleg_continuidade, particip_eleg_continuidade_1,
+            particip_eleg_continuidade_2, particip_eleg_continuidade_3),
+          \(x) x %in% c("Sim", "Não", "Ausência de retorno ou recusa de atendimento"))
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(!is.na(desfecho_participante_interv)) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull()
 
 interv_manejo_aguard_atend_n <- length(interv_manejo_aguard_atend_ids) 

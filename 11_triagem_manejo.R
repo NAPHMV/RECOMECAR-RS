@@ -279,6 +279,20 @@ tri_manejo_aguard_atend_ids <- df |>
       !record_id %in% interv_sa_realiz_ids
   ) |>
   distinct(record_id) |>
+  anti_join(
+    df |>
+      filter(
+        particip_eleg_continuidade %in% c("Sim", "Não", "Ausência de retorno ou recusa de atendimento")
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
+  anti_join(
+    df |>
+      filter(!is.na(desfecho_participante_interv)) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull()
 tri_manejo_aguard_atend_n <- length(tri_manejo_aguard_atend_ids)
 
