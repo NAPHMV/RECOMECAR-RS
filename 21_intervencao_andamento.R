@@ -51,7 +51,7 @@ interv_andamento_resumo <- tibble(
     # as.numeric(t(interv_sessoes_realiz)),
     c(interv_sa_realiz_eleg_n, interv_s1_realiz_eleg_n, interv_s2_realiz_eleg_n,
       interv_s3_realiz_eleg_n, interv_s4_realiz_eleg_n, interv_s5_realiz_eleg_n,
-      interv_sf_realiz__n),
+      interv_sf_realiz_n),
     # Aguardando convite
     c(interv_sa_aguard_convite_n, rep(NA, 6)),
     # Perda anterior
