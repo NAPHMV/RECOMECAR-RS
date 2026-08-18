@@ -69,8 +69,8 @@ gad_summ_completos_df <- gad_df |>
   group_by(sessao) |>
   summarise(
     escore_media = round(mean(escore, na.rm = TRUE), 2),
-    escore_q1    = quantile(escore, .25),
-    escore_q3    = quantile(escore, .75)
+    escore_q1    = quantile(escore, .25, na.rm = TRUE),
+    escore_q3    = quantile(escore, .75, na.rm = TRUE)
   )
 gad_mean_completos_df <- gad_df |>
   filter(record_id %in% interv_sf_realiz_ids) |>
@@ -84,8 +84,8 @@ gad_summ_completos_df <- gad_df |>
   group_by(sessao) |>
   summarise(
     escore_media = round(mean(escore, na.rm = TRUE), 2),
-    escore_q1    = quantile(escore, .25),
-    escore_q3    = quantile(escore, .75)
+    escore_q1    = quantile(escore, .25, na.rm = TRUE),
+    escore_q3    = quantile(escore, .75, na.rm = TRUE)
   )
 gad_mean_completos_df <- gad_df |>
   filter(record_id %in% seg_particip_6m_realizados_ids) |>
@@ -399,7 +399,7 @@ gad_effect_size2 <- gad_df |>
 
 ## Intervenção --------------------------------------------------
 # Baseado en https://pmc.ncbi.nlm.nih.gov/articles/PMC3840331/
-gad_effect_size <- gad_df |>
+gad_interv_effect_size <- gad_df |>
   pivot_wider(id_cols = record_id, names_from = sessao, values_from = escore) |>
   filter(!is.na(`Sessão A`) & !is.na(`Sessão F`)) |>
   select(record_id, `Sessão A`, `Sessão F`) |>
@@ -413,7 +413,7 @@ gad_effect_size <- gad_df |>
   ) |>
   pull(cohen_dz)
 # Baseado na solicitação
-gad_effect_size2 <- gad_df |>
+gad_interv_effect_size2 <- gad_df |>
   pivot_wider(id_cols = record_id, names_from = sessao, values_from = escore) |>
   filter(!is.na(`Sessão A`) & !is.na(`Sessão F`)) |>
   select(record_id, `Sessão A`, `Sessão F`) |>
@@ -436,10 +436,10 @@ tabela_gad <- tibble(
   `Sessão F`      = gad_sf_str,
 )
 tabela_gad_filtr <- tibble(
-  Triagem         = gad_filtr_tri_str,
-  `Sessão A`      = gad_filtr_sa_str,
-  `Sessões 1 a 5` = gad_filtr_s1_s5_str,
-  `Sessão F`      = gad_filtr_sf_str
+  Triagem         = gad_tri_filtr_str,
+  `Sessão A`      = gad_sa_filtr_str,
+  `Sessões 1 a 5` = gad_s1_s5_filtr_str,
+  `Sessão F`      = gad_sf_filtr_str
 ) |>
   mutate(
     `Cohen's dz`  = gad_effect_size,
