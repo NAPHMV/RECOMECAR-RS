@@ -3,7 +3,7 @@ carrega_planilha <- function(url, aba, token) {
     url,
     query = list(token = token, aba = aba),
     httr::config(followlocation = TRUE, ssl_verifypeer = TRUE),
-    httr::timeout(1*10^6)
+    httr::timeout(100)
   )
   
   if (httr::status_code(resp) != 200) {
