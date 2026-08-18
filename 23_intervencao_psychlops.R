@@ -258,7 +258,7 @@ psychlops_long_summ_df <- psychlops_long_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n = dplyr::n_distinct(record_id)
+    n_ids = dplyr::n_distinct(record_id)
   )
 psychlops_long_mean_df <- psychlops_long_df |>
   group_by(sessao) |>
@@ -271,7 +271,7 @@ psychlops_long_summ_completos_interv_df <- psychlops_long_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n = dplyr::n_distinct(record_id)
+    n_ids = dplyr::n_distinct(record_id)
   )
 psychlops_long_mean_completos_interv_df <- psychlops_long_df |>
   filter(record_id %in% interv_sf_realiz_ids) |>
@@ -285,7 +285,7 @@ psychlops_long_summ_completos_seg_df <- psychlops_long_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n = dplyr::n_distinct(record_id)
+    n_ids = dplyr::n_distinct(record_id)
   )
 psychlops_long_mean_completos_seg_df <- psychlops_long_df |>
   filter(record_id %in% seg_particip_6m_realizados_ids) |>

@@ -57,7 +57,7 @@ gad_summ_df <- gad_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n = dplyr::n_distinct(record_id)
+    n_ids = dplyr::n_distinct(record_id)
   )
 gad_mean_df <- gad_df |>
   group_by(sessao) |>
@@ -72,7 +72,7 @@ gad_summ_completos_interv_df <- gad_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n = dplyr::n_distinct(record_id)
+    n_ids = dplyr::n_distinct(record_id)
   )
 gad_mean_completos_interv_df <- gad_df |>
   filter(record_id %in% interv_sf_realiz_ids) |>
@@ -88,7 +88,7 @@ gad_summ_completos_df <- gad_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n = dplyr::n_distinct(record_id)
+    n_ids = dplyr::n_distinct(record_id)
   )
 gad_mean_completos_df <- gad_df |>
   filter(record_id %in% seg_particip_6m_realizados_ids) |>
