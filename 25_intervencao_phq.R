@@ -56,7 +56,7 @@ phq_summ_df <- phq_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n_ids = dplyr::n_distinct(record_id)
+    n = dplyr::n_distinct(record_id)
   )
 phq_mean_df <- phq_df |>
   group_by(sessao) |>
@@ -71,7 +71,7 @@ phq_summ_completos_interv_df <- phq_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n_ids = dplyr::n_distinct(record_id)
+    n = dplyr::n_distinct(record_id)
   )
 phq_mean_completos_interv_df <- phq_df |>
   filter(record_id %in% interv_sf_realiz_ids) |>
@@ -87,7 +87,7 @@ phq_summ_completos_df <- phq_df |>
     escore_media = round(mean(escore, na.rm = TRUE), 2),
     escore_q1    = quantile(escore, .25, na.rm = TRUE),
     escore_q3    = quantile(escore, .75, na.rm = TRUE),
-    n_ids = dplyr::n_distinct(record_id)
+    n = dplyr::n_distinct(record_id)
   )
 phq_mean_completos_df <- phq_df |>
   filter(record_id %in% seg_particip_6m_realizados_ids) |>
@@ -409,7 +409,7 @@ tabela_phq_filtr <- tibble(
   )
 
 ## Intervenção ---------------------------------------------------
-tabela_phq_filtr <- tibble(
+tabela_phq_filtr_interv <- tibble(
   `Sessão A`      = phq_sa_filtr_interv_str,
   `Sessões 1 a 5` = phq_s1_s5_filtr_interv_str,
   `Sessão F`      = phq_sf_filtr_interv_str
