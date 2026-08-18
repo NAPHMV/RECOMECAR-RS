@@ -2,7 +2,7 @@ desfecho_plot <- function(df, plot.limits) {
   plot <- df |>
     filter(sessao != "Sessões 1 a 5") |>
     mutate(
-      text = glue::glue("{sessao}\n\nMédia  = {escore_media}\nQ1-Q3 = {escore_q1} - {escore_q3}")
+      text = glue::glue("{sessao}\n\nn = {n}\nMédia  = {escore_media}\nQ1-Q3 = {escore_q1} - {escore_q3}")
     ) |>
     ggplot(aes(x = sessao, y = escore_media, text = text)) +
     geom_errorbar(aes(ymin = escore_q1, ymax = escore_q3),
