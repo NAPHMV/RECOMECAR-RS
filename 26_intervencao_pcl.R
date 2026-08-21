@@ -342,3 +342,14 @@ tabela_pcl_filtr_interv <- tibble(
     `Effect Size` = pcl_interv_effect_size2
   )
 
+
+
+# TEXTO ========================================================================
+texto_pcl <- paste0(
+  "<b>O escore é calculado como a soma de questões 1 a 20</b>.<br>
+<br>
+<b>Effect Size</b> foi calculado como média de todos os efeitos, calculados para cada participante por (SA - SF)/(Desvio Padrão SA).<br>
+<br>
+<b>Cohen's dz</b> foi calculado como (Média da Diferença)/(DP da Diferença).<br>
+Referência: https://doi.org/10.3389/fpsyg.2013.00863 (eq. 6)."
+)
