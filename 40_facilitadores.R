@@ -53,7 +53,9 @@ facilit_inicio_data <- interv_andamento_df |>
   filter(!is.na(cod_pesq)) |>
   group_by(cod_pesq) |>
   slice_min(sessao_A_data) |>
-  select(cod_pesq, sessao_A_data)
+  select(
+    `Código` = cod_pesq, 
+    `Primeira Sessão A` = sessao_A_data)
 
 ## n Atendimentos -------------------------------------
 facilit_atend_n <- df |>
