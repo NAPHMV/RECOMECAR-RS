@@ -1,3 +1,28 @@
+# Ativos =======================================================================
+googlesheets4::gs4_deauth()
+dados_seg_facilit <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MJaDZM8KAWofWWtFC7TvvlgBtY7vmOGq8X2ZM-lLCLg/edit?gid=0#gid=0") |>
+  select(
+    `Código` = `Código do facilitador`,
+    ID = ID,
+    Onda = `FASE DE INICIO`,
+    Baseline,
+    `3M`,
+    `6M`,
+    `9M`,
+    `12M`,
+  ) |>
+  group_by(Onda) |>
+  summarise(
+    across(c("Baseline", matches("M")),
+           \(x) sum(x == "Concluído", na.rm = TRUE)),
+    `3 meses` = glue::glue("{`3M`}/{Baseline}"),
+    `6 meses` = glue::glue("{`6M`}/{`3M`}"),
+    `9 meses` = glue::glue("{`9M`}/{`6M`}"),
+    `12 meses` = glue::glue("{`12M`}/{`9M`}")
+  ) |>
+  select(-c(`3M`:`12M`))
+
+
 # Atendimento ==================================================================
 ## Início --------------------------------------------------
 facilit_inicio_data <- interv_andamento_df |>
@@ -32,6 +57,7 @@ facilit_inicio_data <- interv_andamento_df |>
 
 ## n Atendimentos -------------------------------------
 facilit_atend_n <- df |>
+  ## Atendimentos na Intervenção
   filter(str_detect(redcap_event_name, "Sessao")) |>
   mutate(
     cod_pesq = case_when(
@@ -75,7 +101,70 @@ facilit_atend_n <- df |>
   ) |>
   filter(realiz == TRUE) |>
   group_by(cod_pesq) |>
-  summarise(atend_n = n_distinct(record_id, redcap_event_name))
+  summarise(interv_atend_n = n_distinct(record_id, redcap_event_name)) |>
+  ## Atendimento na Pré-Triagem
+  full_join(
+    df |>
+      filter(str_detect(redcap_event_name, "Triagem")) |>
+      mutate(
+        cod_pesq = case_when(
+          is.na(cod_pesq_1_busc) ~ NA,
+          !is.na(cod_pesq_1_busc) &
+            is.na(cod_pesq_2_busc) ~ cod_pesq_1_busc,
+          !is.na(cod_pesq_2_busc) &
+            is.na(cod_pesq_3_busc) ~ cod_pesq_2_busc,
+          !is.na(cod_pesq_3_busc) &
+            is.na(cod_pesq_4_busc) ~ cod_pesq_3_busc,
+          !is.na(cod_pesq_4_busc) &
+            is.na(cod_pesq_5_busc) ~ cod_pesq_4_busc,
+          !is.na(cod_pesq_5_busc) &
+            is.na(cod_pesq_6_busc) ~ cod_pesq_5_busc,
+          !is.na(cod_pesq_6_busc) ~ cod_pesq_6_busc
+        )
+      ) |>
+      filter(!is.na(cod_pesq) & record_id %in% pretri_realiz_ids) |>
+      group_by(cod_pesq) |>
+      summarise(pretri_atend_n = dplyr::n()),
+    by = "cod_pesq"
+  ) |>
+  ## Atendimentos Triagem
+  full_join(
+    df |>
+      filter(str_detect(redcap_event_name, "Triagem")) |>
+      mutate(
+        cod_pesq = case_when(
+          is.na(cod_pesq_1) ~ NA,
+          !is.na(cod_pesq_1) &
+            is.na(cod_pesq_2) ~ cod_pesq_1,
+          !is.na(cod_pesq_2) &
+            is.na(cod_pesq_3) ~ cod_pesq_2,
+          !is.na(cod_pesq_3) &
+            is.na(cod_pesq_4) ~ cod_pesq_3,
+          !is.na(cod_pesq_4) &
+            is.na(cod_pesq_5) ~ cod_pesq_4,
+          !is.na(cod_pesq_5) &
+            is.na(cod_pesq_6) ~ cod_pesq_5,
+          !is.na(cod_pesq_6) ~ cod_pesq_6
+        )
+      ) |>
+      filter(!is.na(cod_pesq) & record_id %in% tri_realiz_ids) |>
+      group_by(cod_pesq) |>
+      summarise(tri_atend_n = dplyr::n()),
+    by = "cod_pesq"
+  ) |>
+  rowwise() |>
+  mutate(
+    cod_pesq = as.double(cod_pesq),
+    soma = sum(c(pretri_atend_n, tri_atend_n, interv_atend_n), na.rm = TRUE)
+  ) |>
+  select(
+    `Código` = cod_pesq,
+    `Pré-triagem` = pretri_atend_n,
+    Triagem = tri_atend_n,
+    `Intervenção` = interv_atend_n,
+    Total = soma
+  ) |>
+  arrange(`Código`)
   
 
 # Consentimento ================================================================
@@ -87,7 +176,7 @@ facilit_seg_andamento_consent <- df |>
   reframe(ID = record_id, Consentimento = as.Date(data_preenchi_facili))
 
 
-# Geral =======================================================================
+# Andamento ====================================================================
 facilit_seg_andamento_resumo <- df |>
   filter(
     record_id %in% facilit_seg_andamento_consent$ID &
@@ -145,7 +234,7 @@ facilit_seg_andamento_resumo <- df |>
   rename(ID = record_id)
 
 
-# PHQ-9 =======================================================================
+# Manejo =======================================================================
 facilit_manejo_phq9 <- df |>
   filter(
     (redcap_event_name == "Durante o Treinamento (Arm 2: Facilitadores)" |
