@@ -360,7 +360,8 @@ facilit_dados_pss <- df |>
 
 # Tabelas --------------------------------------------------
 ## Sociodemográficos --------------------------
-facilit_tab_socio <- df |>
+facilit_tab1_build <- function(df) {
+  df |>
   filter(redcap_event_name == "Baseline (Arm 2: Facilitadores)") |>
   select(
     idade_facilitador, genero_facilitador, raca_facilitador,
@@ -417,7 +418,7 @@ facilit_tab_socio <- df |>
   tab_options(
     table.font.size = px(13),
     table.font.names = "Times New Roman",
-    heading.title.font.size = px(12),   
+    heading.title.font.size = px(13),   
     heading.align = "left",
     row_group.border.top.color = "grey90",
     row_group.border.top.width = px(1),
@@ -427,14 +428,15 @@ facilit_tab_socio <- df |>
   ) |>
   # Negrito nos nomes dos grupos
   tab_style(
-    style = cell_text(size = px(12), weight = "normal"),
+    style = cell_text(size = px(13), weight = "normal"),
     locations = cells_row_groups()
   ) |>
   # Tamanho de texto das linhas
   tab_style(
-    style = cell_text(size = px(12), weight = "normal"),
+    style = cell_text(size = px(13), weight = "normal"),
     locations = cells_body()
   )
+}
 
 ## Escores ----------------------------------------
 facilit_tab2_build <- function(df) {
@@ -496,7 +498,7 @@ facilit_tab2_build <- function(df) {
     tab_options(
       table.font.size = px(13),
       table.font.names = "Times New Roman",
-      heading.title.font.size = px(12),
+      heading.title.font.size = px(13),
       heading.align = "left",
       row_group.border.top.color = "grey70",
       # row_group.border.top.width = px(1),
@@ -506,12 +508,12 @@ facilit_tab2_build <- function(df) {
     ) |>
     # Negrito nos nomes dos grupos
     tab_style(
-      style = cell_text(size = px(12), weight = "bold"),
+      style = cell_text(size = px(13), weight = "bold"),
       locations = cells_row_groups()
     ) |>
     # Tamanho de texto das linhas
     tab_style(
-      style = cell_text(size = px(12), weight = "normal"),
+      style = cell_text(size = px(13), weight = "normal"),
       locations = cells_body()
     )
 }
