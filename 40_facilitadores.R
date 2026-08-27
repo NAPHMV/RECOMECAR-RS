@@ -357,3 +357,164 @@ facilit_dados_pss <- df |>
   filter(!is.na(redcap_event_name) & !if_all(contains("pss"), is.na)) |>
   rename(ID = record_id, Etapa = redcap_event_name) |>
   rename_with(.cols = contains("pss"), .fn = \(x) paste("Questão ", substring(x, nchar(x))))
+
+# Tabelas --------------------------------------------------
+## Sociodemográficos --------------------------
+facilit_tab_socio <- df |>
+  filter(redcap_event_name == "Baseline (Arm 2: Facilitadores)") |>
+  select(
+    idade_facilitador, genero_facilitador, raca_facilitador,
+    escolaridade_facilitador, area_est_facilitador, 
+    outra_area_est_facilitador, trab_volunt_facilitador,
+    sair_casa_facilitador
+  ) |>
+  mutate(
+    genero_facilitador = case_when(
+      str_detect(genero_facilitador, "Outro") ~ "Outro", 
+      str_detect(genero_facilitador, "Prefiro") ~ "Preferiu não responder",
+      TRUE ~ genero_facilitador
+    ),
+    area_est_facilitador = case_when(
+      str_detect(area_est_facilitador, "Outro") ~ "Outra área",
+      TRUE ~ area_est_facilitador
+    )
+  ) |>
+  select(-outra_area_est_facilitador) |>
+  tbl_summary(
+    label = list(
+      idade_facilitador ~ "Idade",
+      genero_facilitador ~ "Gênero",
+      raca_facilitador ~ "Raça/cor",
+      escolaridade_facilitador ~ "Escolaridade",
+      area_est_facilitador ~ "Área de estudo",
+      trab_volunt_facilitador ~ "Trabalho voluntário",
+      sair_casa_facilitador ~ "Precisou sair/dormir fora de casa"
+    ),
+    type = list(
+      trab_volunt_facilitador ~ "dichotomous",
+      sair_casa_facilitador ~ "dichotomous"
+    ),
+    value = list(
+      trab_volunt_facilitador ~ "Sim",
+      sair_casa_facilitador ~ "Sim"
+    ),
+    statistic = list(
+      all_categorical() ~ "{n} ({p}%)",
+      idade_facilitador ~ "{mean} ± {sd}"
+    ),
+    digits = list(
+      all_continuous()  ~ 1,
+      all_categorical() ~ c(0, 0, 2)
+    )
+  ) |>
+  modify_header(label = "**Variável**", stat_0 = "**n = {N}**") |>
+  modify_footnote(stat_0 ~ "Média ± DP; Mediana [Q1-Q3]; n (%)") |>
+  bold_labels() |>
+  as_gt() |>
+  tab_header(
+    title = html("<strong>Tabela 1.</strong> Dados sociodemográficos e experiência durante enchentes.")
+  ) |>
+  tab_options(
+    table.font.size = px(13),
+    table.font.names = "Times New Roman",
+    heading.title.font.size = px(12),   
+    heading.align = "left",
+    row_group.border.top.color = "grey90",
+    row_group.border.top.width = px(1),
+    row_group.border.bottom.color = "grey90",
+    row_group.border.bottom.width = px(.5),
+    row_group.padding = px(2)          # reduz o espaço vertical dos grupos
+  ) |>
+  # Negrito nos nomes dos grupos
+  tab_style(
+    style = cell_text(size = px(12), weight = "normal"),
+    locations = cells_row_groups()
+  ) |>
+  # Tamanho de texto das linhas
+  tab_style(
+    style = cell_text(size = px(12), weight = "normal"),
+    locations = cells_body()
+  )
+
+## Escores ----------------------------------------
+facilit_tab2_build <- function(df) {
+  df |>
+    filter(str_detect(redcap_event_name, "Arm 2")) |>
+    select(redcap_event_name, score_phq_9, score_gad_7, pss_q1:pss_q5) |>
+    mutate(
+      redcap_event_name = factor(
+        case_when(
+          str_detect(redcap_event_name, "Durante") ~ "Treinamento",
+          str_detect(redcap_event_name, "3m")          ~ "3 meses",
+          str_detect(redcap_event_name, "6m")          ~ "6 meses",
+          str_detect(redcap_event_name, "9m")          ~ "9 meses",
+          str_detect(redcap_event_name, "12m")         ~ "12 meses",
+          TRUE ~ NA_character_
+        ),
+        # Define todos os níveis explicitamente na criação do factor
+        levels = c("Treinamento", "3 meses", "6 meses", "9 meses", "12 meses")
+      )
+    ) |>
+    filter(!is.na(redcap_event_name) & !if_all(contains("pss"), is.na)) |>
+    rename(Etapa = redcap_event_name) |>
+    # rename_with(.cols = contains("pss"), .fn = \(x) paste("Questão ", substring(x, nchar(x)))) |>
+    tbl_summary(
+      by = Etapa,
+      label = list(
+        score_phq_9 ~ "PHQ-9",
+        score_gad_7 ~ "GAD-7"
+      ),
+      statistic = all_categorical() ~ "{n} ({p}%)",
+      digits = list(
+        all_continuous()  ~ 1,
+        all_categorical() ~ c(0, 0, 2)
+      ),
+      missing = "no"
+    ) |>
+    modify_table_body(
+      ~ .x |>
+        mutate(across(
+          all_stat_cols(),
+          \(x) str_replace_all(x, "0 \\(NA%\\)|NA \\(NA, NA\\)|NA \\(NA%\\)", "—")
+        ))
+    ) |>
+    modify_header(label = "**Variável**") |>
+    # modify_footnote(stat_0 ~ "Média ± DP; Mediana [Q1-Q3]; n (%)") |>
+    # bold_labels() |>
+    as_gt() |>
+    tab_row_group(
+      label = "PSS",
+      rows = variable %in% c("pss_q1", "pss_q2", "pss_q3", "pss_q4", "pss_q5")
+    ) |>
+    tab_row_group(
+      label = "Escalas",
+      rows = variable %in% c("score_phq_9", "score_gad_7")
+    ) |>
+    tab_header(
+      title = html("<strong>Tabela 2.</strong> Pontuação em escalas durante o treinamento e ao longo do seguimento.")
+    ) |>
+    tab_options(
+      table.font.size = px(13),
+      table.font.names = "Times New Roman",
+      heading.title.font.size = px(12),
+      heading.align = "left",
+      row_group.border.top.color = "grey70",
+      # row_group.border.top.width = px(1),
+      row_group.border.bottom.color = "grey90"
+      # row_group.border.bottom.width = px(.5),
+      # row_group.padding = px(2) # reduz o espaço vertical dos grupos
+    ) |>
+    # Negrito nos nomes dos grupos
+    tab_style(
+      style = cell_text(size = px(12), weight = "bold"),
+      locations = cells_row_groups()
+    ) |>
+    # Tamanho de texto das linhas
+    tab_style(
+      style = cell_text(size = px(12), weight = "normal"),
+      locations = cells_body()
+    )
+}
+
+
+
