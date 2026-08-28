@@ -1,3 +1,15 @@
+# IDs válidos ==================================================================
+facilit_codigos_invalidos <- as.character(c(
+  5, 9, 21, 26, 29, 30, 42, 48:53
+))
+
+facilit_ids <- df |>
+  filter(!is.na(id_facilitador)) |>
+  select(record_id, id_facilitador) |>
+  filter(!id_facilitador %in% facilit_codigos_invalidos) |>
+  distinct(record_id) |>
+  pull()
+
 # Ativos =======================================================================
 googlesheets4::gs4_deauth()
 dados_seg_facilit <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MJaDZM8KAWofWWtFC7TvvlgBtY7vmOGq8X2ZM-lLCLg/edit?gid=0#gid=0") |>
@@ -53,6 +65,7 @@ facilit_inicio_data <- interv_andamento_df |>
   filter(!is.na(cod_pesq)) |>
   group_by(cod_pesq) |>
   slice_min(sessao_A_data) |>
+  filter(!(cod_pesq %in% facilit_codigos_invalidos)) |>
   select(
     `Código` = cod_pesq, 
     `Primeira Sessão A` = sessao_A_data)
@@ -154,6 +167,7 @@ facilit_atend_n <- df |>
       summarise(tri_atend_n = dplyr::n()),
     by = "cod_pesq"
   ) |>
+  filter(!(cod_pesq %in% facilit_codigos_invalidos)) |>
   rowwise() |>
   mutate(
     cod_pesq = as.double(cod_pesq),
@@ -173,7 +187,8 @@ facilit_atend_n <- df |>
 facilit_seg_andamento_consent <- df |>
   filter(
     redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
-      tcle_consentiu_questionarios == "Sim"
+      tcle_consentiu_questionarios == "Sim" &
+      record_id %in% facilit_ids
   ) |>
   reframe(ID = record_id, Consentimento = as.Date(data_preenchi_facili))
 
@@ -244,7 +259,8 @@ facilit_manejo_phq9 <- df |>
        redcap_event_name == "Seguimento 6m (Arm 2: Facilitadores)" |
        redcap_event_name == "Seguimento 9m (Arm 2: Facilitadores)" |
        redcap_event_name == "Seguimento 12m (Arm 2: Facilitadores)") &
-      (!phq9_perg_9 %in% "Nenhuma vez") & !is.na(phq9_perg_9)
+      (!phq9_perg_9 %in% "Nenhuma vez") & !is.na(phq9_perg_9) &
+      record_id %in% facilit_ids
   ) |>
   group_by(record_id) |>
   summarise(
@@ -263,7 +279,9 @@ facilit_manejo_phq9 <- df |>
 # Dados ========================================================================
 ## Sociodemográficos ------------------------------------------
 facilit_dados_socio <- df |>
-  filter(redcap_event_name == "Baseline (Arm 2: Facilitadores)") |>
+  filter(
+    redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
+      record_id %in% facilit_ids) |>
   select(
     ID = record_id,
     data_nasc_facilitador, genero_facilitador, raca_facilitador,
@@ -292,7 +310,11 @@ facilit_dados_socio <- df |>
 
 ## PHQ-9 --------------------------------------------------
 facilit_dados_phq <- df |>
-  filter(str_detect(redcap_event_name, "Arm 2") & !is.na(score_phq_9)) |>
+  filter(
+    str_detect(redcap_event_name, "Arm 2") & 
+      !is.na(score_phq_9) &
+      record_id %in% facilit_ids
+  ) |>
   select(record_id, redcap_event_name, score_phq_9) |>
   mutate(
     redcap_event_name = factor(
@@ -314,7 +336,11 @@ facilit_dados_phq <- df |>
   rename(ID = record_id)
 ## GAD-7 --------------------------------------------------
 facilit_dados_gad <- df |>
-  filter(str_detect(redcap_event_name, "Arm 2") & !is.na(score_gad_7)) |>
+  filter(
+    str_detect(redcap_event_name, "Arm 2") & 
+      !is.na(score_gad_7) &
+      record_id %in% facilit_ids
+  ) |>
   select(record_id, redcap_event_name, score_gad_7) |>
   mutate(
     redcap_event_name = factor(
@@ -336,7 +362,10 @@ facilit_dados_gad <- df |>
   rename(ID = record_id)
 ## PSS -------------------------------------------
 facilit_dados_pss <- df |>
-  filter(str_detect(redcap_event_name, "Arm 2")) |>
+  filter(
+    str_detect(redcap_event_name, "Arm 2") &
+      record_id %in% facilit_ids
+  ) |>
   select(
     record_id, redcap_event_name, pss_q1:pss_q5
   ) |>
@@ -362,7 +391,10 @@ facilit_dados_pss <- df |>
 ## Sociodemográficos --------------------------
 facilit_tab1_build <- function(df) {
   df |>
-  filter(redcap_event_name == "Baseline (Arm 2: Facilitadores)") |>
+  filter(
+    redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
+      record_id %in% facilit_ids
+  ) |>
   select(
     idade_facilitador, genero_facilitador, raca_facilitador,
     escolaridade_facilitador, area_est_facilitador, 
@@ -441,7 +473,10 @@ facilit_tab1_build <- function(df) {
 ## Escores ----------------------------------------
 facilit_tab2_build <- function(df) {
   df |>
-    filter(str_detect(redcap_event_name, "Arm 2")) |>
+    filter(
+      str_detect(redcap_event_name, "Arm 2") &
+        record_id %in% facilit_ids
+    ) |>
     select(redcap_event_name, score_phq_9, score_gad_7, pss_q1:pss_q5) |>
     mutate(
       redcap_event_name = factor(
