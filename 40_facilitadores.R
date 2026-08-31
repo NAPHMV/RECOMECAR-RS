@@ -1,7 +1,7 @@
 # IDs válidos ==================================================================
-facilit_codigos_invalidos <- as.character(c(
+facilit_codigos_invalidos <- c(as.character(c(
   5, 9, 21, 26, 29, 30, 42, 48:53
-))
+)), "05", "09")
 
 facilit_ids <- df |>
   filter(!is.na(id_facilitador)) |>
@@ -9,6 +9,7 @@ facilit_ids <- df |>
   filter(!id_facilitador %in% facilit_codigos_invalidos) |>
   distinct(record_id) |>
   pull()
+
 
 # Ativos =======================================================================
 googlesheets4::gs4_deauth()
@@ -170,7 +171,7 @@ facilit_atend_n <- df |>
   filter(!(cod_pesq %in% facilit_codigos_invalidos)) |>
   rowwise() |>
   mutate(
-    cod_pesq = as.double(cod_pesq),
+    # cod_pesq = as.numeric(cod_pesq),
     soma = sum(c(pretri_atend_n, tri_atend_n, interv_atend_n), na.rm = TRUE)
   ) |>
   select(
