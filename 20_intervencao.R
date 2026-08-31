@@ -1052,7 +1052,8 @@ interv_sa_aguard_convite_ids <- df |>
   ungroup() |>
   # é elegível para intervenção
   filter(
-    record_id %in% tri_eleg_interv_ids
+    record_id %in% tri_eleg_interv_ids |
+      record_id %in% tri_manejo_eleg_ids
     # particip_eleg_continuidade == "Sim"
   ) |>
   distinct(record_id) |>
