@@ -97,6 +97,7 @@ interv_manejo_algum_realiz_ids <- df |>
   filter(
     redcap_event_name != "Triagem (Arm 1: Participantes)" &
       !str_detect(redcap_event_name, "Arm 2") &
+      !str_detect(redcap_event_name, "Seguimento") &
       record_id %in% interv_manejo_algum_enc_ids &
       if_any(
         c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),

@@ -510,6 +510,25 @@ interv_interromperam_geral_str <- df |>
   mutate(linha = glue("{group} = {n}")) |>
   pull(linha) |>
   paste(collapse = "\n")
+
+# Christian
+interv_interromperam_geral_christian_str <- df |>
+  filter(
+    record_id %in% interv_sa_realiz_ids &
+      redcap_event_name == "Desfecho (Arm 1: Participantes)" &
+      desfecho_participante_interv == "Retirado"
+  ) |>
+  mutate(
+    motivo = case_when(
+      desfecho_participante_motivo_exclu_interv___2 == "Checked" ~ "Desistência",
+      TRUE ~ desfecho_participante_motivo_interv)
+  ) |>
+  with(rstatix::freq_table(motivo)) |>
+  arrange(group) |>
+  mutate(linha = glue("{group} = {n}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
 ########## Critério de exclusão
 interv_interromperam_geral_criterio_str <- df |>
   filter(record_id %in% interv_sa_realiz_ids) |>
@@ -524,6 +543,25 @@ interv_interromperam_geral_criterio_str <- df |>
   mutate(linha = glue("{`Critério de Exclusão`} = {Quantidade}")) |>
   pull(linha) |>
   paste(collapse = "\n")
+
+# Christian
+interv_interromperam_geral_criterio_christian_str <- df |>
+  filter(
+    record_id %in% interv_sa_realiz_ids &
+      desfecho_participante_motivo_exclu_interv___2 == "Unchecked"
+  ) |>
+  summarise(
+    `Comunicação` = sum(desfecho_participante_motivo_exclu_interv___1 == "Checked", na.rm = TRUE),
+    Duplicidade = sum(desfecho_participante_motivo_exclu_interv___3 == "Checked", na.rm = TRUE),
+    `Diagnóstico` = sum(desfecho_participante_motivo_exclu_interv___4 == "Checked", na.rm = TRUE),
+    Risco = sum(desfecho_participante_motivo_exclu_interv___5 == "Checked", na.rm = TRUE)
+  ) |>
+  pivot_longer(cols = everything(), names_to = "Critério de Exclusão", values_to = "Quantidade") |>
+  mutate(linha = glue("{`Critério de Exclusão`} = {Quantidade}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
+
 
 ## Sessão 1-F  -----------------------------------------------
 # interv_interromperam_ids <- df |>
@@ -615,7 +653,7 @@ interv_sa_perda_ant_ids <- df |>
   distinct(record_id) |> 
   pull()
 interv_sa_perda_ant_n <- length(interv_sa_perda_ant_ids)
-### Perda posterior ----
+### Perda posterior ---------------------------------
 interv_sa_perda_post_ids <- df |>
   filter(
     record_id %in% tri_eleg_interv_ids &
@@ -657,14 +695,14 @@ interv_sa_perda_post_criterio_str <- df |>
   pull(linha) |>
   paste(collapse = "\n")
 
-### Perda geral ----
+### Perda geral -----------------------------------
 interv_sa_perda_ids <- df |> 
   filter(record_id %in% c(interv_sa_perda_ant_ids, interv_sa_perda_post_ids)) |>
   distinct(record_id) |> 
   pull()
 interv_sa_perda_n <- length(interv_sa_perda_ids)
 
-### Não inicia ----
+### Não inicia -------------------------------
 interv_sa_naoinicia_ids <- df |>
   filter(
     record_id %in% tri_eleg_interv_ids &
@@ -725,9 +763,72 @@ interv_sa_naoinicia_criterio_str <- df |>
   pull(linha) |>
   paste(collapse = "\n")
   
-    
+############## Christian
+interv_sa_naoinicia_christian_str <- df |>
+  filter(
+    record_id %in% interv_sa_naoinicia_ids & 
+      !is.na(desfecho_participante_motivo_interv)
+  ) |>
+  distinct(record_id, desfecho_participante_motivo_interv) |>
+  left_join(
+    df |>
+      anti_join(
+        df |>
+          filter(record_id %in% interv_sa_naoinicia_ids &
+                   !is.na(desfecho_participante_motivo_interv)) |>
+          distinct(record_id),
+        by = "record_id") |>
+      filter(record_id %in% interv_sa_naoinicia_ids) |>
+      distinct(record_id, motivo = tentativa_motivo_n_pros) |>
+      filter(!is.na(motivo)),
+    by = "record_id"
+  )  |>
+  mutate(
+    motivo = coalesce(desfecho_participante_motivo_interv, motivo)
+  ) |>
+  full_join(
+    df |>
+      filter(
+        if_any(
+          c(desfecho_participante_motivo_exclu_interv___1:desfecho_participante_motivo_exclu_interv___5),
+          \(x) x == "Checked")) |>
+      select(record_id, desfecho_participante_motivo_exclu_interv___1:desfecho_participante_motivo_exclu_interv___5),
+    by = "record_id"
+  ) |>
+  mutate(
+    motivo = case_when(
+      if_any(
+        c(desfecho_participante_motivo_exclu_interv___2), 
+        \(x) x == "Checked") ~ "Desistência",
+      TRUE ~ motivo
+    )
+  ) |>
+  with(rstatix::freq_table(motivo)) |>
+  arrange(group) |>
+  mutate(linha = glue("{group} = {n}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
 
-### Exclusão ----
+interv_sa_naoinicia_criterio_christian_str <- df |>
+  filter(
+    record_id %in% interv_sa_naoinicia_ids &
+      desfecho_participante_motivo_interv == "Critério de exclusão" &
+      desfecho_participante_motivo_exclu_interv___2 == "Unchecked"
+  ) |>
+  summarise(
+    `Comunicação` = sum(desfecho_participante_motivo_exclu_interv___1 == "Checked", na.rm = TRUE),
+    Duplicidade = sum(desfecho_participante_motivo_exclu_interv___3 == "Checked", na.rm = TRUE),
+    `Diagnóstico` = sum(desfecho_participante_motivo_exclu_interv___4 == "Checked", na.rm = TRUE),
+    Risco = sum(desfecho_participante_motivo_exclu_interv___5 == "Checked", na.rm = TRUE)
+  ) |>
+  pivot_longer(cols = everything(), names_to = "Critério de Exclusão", values_to = "Quantidade") |>
+  mutate(linha = glue("{`Critério de Exclusão`} = {Quantidade}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
+
+
+### Exclusão ---------------------------------
 interv_sa_exclusao_str <- df |>
   filter(
     record_id %in% interv_sa_perda_post_ids &
@@ -753,8 +854,44 @@ interv_sa_exclusao_criterio_str <- df |>
   pull(linha) |>
   paste(collapse = "\n")
 
+############## Christian
+interv_sa_exclusao_christian_str <- df |>
+  filter(
+    record_id %in% interv_sa_perda_post_ids &
+      !is.na(desfecho_participante_motivo_interv)
+  ) |>
+  mutate(
+    motivo = case_when(
+      desfecho_participante_motivo_exclu_interv___2 == "Checked" ~ "Desistência",
+      TRUE ~ desfecho_participante_motivo_interv
+    )
+  ) |>
+  with(rstatix::freq_table(motivo)) |>
+  arrange(group) |>
+  mutate(linha = glue("{group} = {n}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
 
-### Elegível ----
+interv_sa_exclusao_criterio_christian_str <- df |>
+  filter(
+    record_id %in% interv_sa_perda_post_ids &
+      desfecho_participante_motivo_exclu_interv___2 == "Unchecked"
+  ) |>
+  summarise(
+    `Comunicação` = sum(desfecho_participante_motivo_exclu_interv___1 == "Checked", na.rm = TRUE),
+    Duplicidade = sum(desfecho_participante_motivo_exclu_interv___3 == "Checked", na.rm = TRUE),
+    `Diagnóstico` = sum(desfecho_participante_motivo_exclu_interv___4 == "Checked", na.rm = TRUE),
+    Risco = sum(desfecho_participante_motivo_exclu_interv___5 == "Checked", na.rm = TRUE)
+  ) |>
+  pivot_longer(cols = everything(), names_to = "Critério de Exclusão", values_to = "Quantidade") |>
+  mutate(linha = glue("{`Critério de Exclusão`} = {Quantidade}")) |>
+  pull(linha) |>
+  paste(collapse = "\n")
+
+
+
+
+### Elegível -------------------------------
 interv_sa_realiz_eleg_ids <- df |>
   filter(
     record_id %in% tri_eleg_interv_ids &
