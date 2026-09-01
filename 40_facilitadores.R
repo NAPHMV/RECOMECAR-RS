@@ -536,7 +536,7 @@ facilit_tab2_build <- function(df) {
       table.font.names = "Times New Roman",
       heading.title.font.size = px(13),
       heading.align = "left",
-      row_group.border.top.color = "grey70",
+      row_group.border.top.color = "grey90",
       # row_group.border.top.width = px(1),
       row_group.border.bottom.color = "grey90"
       # row_group.border.bottom.width = px(.5),
