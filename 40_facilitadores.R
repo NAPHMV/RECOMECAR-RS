@@ -183,6 +183,25 @@ facilit_atend_n <- df |>
   ) |>
   arrange(`Código`)
   
+### dt
+facilit_atend_n_dt <- make_dt(
+  facilit_atend_n, scrollY = "500px", searching = FALSE
+) |>
+  DT::formatStyle(
+    columns = names(facilit_atend_n),
+    backgroundColor = DT::styleEqual(
+      levels  = NA,
+      values  = c(cores_tab_cinza2)
+    )
+  ) |>
+  DT::formatStyle(
+    columns         = "Código",
+    fontWeight      = "bold",
+    color           = "#FFFFFF",
+    backgroundColor = "#6210A1"
+  )
+
+
 
 # Consentimento ================================================================
 facilit_seg_andamento_consent <- df |>
