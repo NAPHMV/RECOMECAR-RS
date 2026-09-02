@@ -327,6 +327,7 @@ interv_manejo_risco_algum_n <- df |>
   filter(record_id %in% interv_manejo_algum_realiz_ids) |>
   select(
     record_id, redcap_event_name, redcap_repeat_instance,
+    atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd,
     atend_psico_checklist_2, atend_psiq_checklist_2, atend_assist_checklist_2
   ) |>
   filter(
