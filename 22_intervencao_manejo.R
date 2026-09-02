@@ -101,11 +101,11 @@ interv_manejo_algum_realiz_ids <- df |>
       record_id %in% interv_manejo_algum_enc_ids &
       if_any(
         c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),
-        \(x) x == "Sim") #&
+        \(x) x == "Sim") &
       # if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
       #         \(x) !str_detect(x, "Seguimento"))
-      # (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
-      #         \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial")))
+      if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
+              \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))
   ) |>
   distinct(record_id) |>
   pull()
@@ -171,9 +171,9 @@ interv_manejo_realiz_n <- df |>
       !str_detect(redcap_event_name, "Arm 2") &
       if_any(
         c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1),
-        \(x) x == "Sim") #&
-    # (if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd), 
-    #         \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial")))
+        \(x) x == "Sim") &
+      if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
+            \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))
   ) |>
   nrow()
   
@@ -296,7 +296,10 @@ interv_manejo_desist_str <- glue(
 
 ## Falsos positivos =====================================================
 interv_manejo_falsos_positivos_n <- df |>
-  filter(redcap_event_name != "Triagem (Arm 1: Participantes)") |>
+  filter(
+    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+      !str_detect(redcap_event_name, "Arm 2")
+  ) |>
   mutate(
     falso_positivo = case_when(
       atend_psico_checklist_2 == "Sim" |
@@ -307,7 +310,11 @@ interv_manejo_falsos_positivos_n <- df |>
         atend_psiq_checklist_2 == "Não" ~ "Sim"
     )
   ) |>
-  filter(falso_positivo == "Sim") |>
+  filter(
+    falso_positivo == "Sim" &
+      if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
+             \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))
+  ) |>
   distinct(record_id) |>
   nrow()
 interv_manejo_falsos_positivos_str <- glue::glue(
@@ -322,13 +329,18 @@ interv_manejo_risco_algum_n <- df |>
     record_id, redcap_event_name, redcap_repeat_instance,
     atend_psico_checklist_2, atend_psiq_checklist_2, atend_assist_checklist_2
   ) |>
-  filter(redcap_event_name != "Triagem (Arm 1: Participantes)") |>
+  filter(
+    redcap_event_name != "Triagem (Arm 1: Participantes)" &
+      !str_detect(redcap_event_name, "Arm 2")
+  ) |>
   group_by(record_id, redcap_repeat_instance) |>
   filter(
-    atend_psiq_checklist_2 == "Sim" |
-      atend_assist_checklist_2 == "Sim" |
-      atend_psico_checklist_2 == "Sim"
-  ) |>
+    if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
+           \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial")) &
+      (atend_psiq_checklist_2 == "Sim" |
+         atend_assist_checklist_2 == "Sim" |
+         atend_psico_checklist_2 == "Sim"
+      )) |>
   distinct(record_id) |>
   nrow()
 interv_manejo_risco_algum_str <- glue(
@@ -347,7 +359,8 @@ interv_manejo_eleg_ids <- df |>
   filter(
     record_id %in% interv_manejo_algum_realiz_ids,
     redcap_event_name != 'Triagem (Arm 1: Participantes)' &
-      !str_detect(redcap_event_name, "Seguimento")
+      !str_detect(redcap_event_name, "Seguimento") &
+      !str_detect(redcap_event_name, "Arm 2")
   ) %>% 
   filter(
     enc_sa_superv_apto %in% "1 - Sim" |
@@ -491,7 +504,9 @@ interv_manejo_tipo_df <- df |>
   filter(
     if_any(
       c(atend_psico_checklist_1, atend_psiq_checklist_1, atend_assist_checklist_1), 
-      \(x) x %in% "Sim")
+      \(x) x %in% "Sim") &
+      if_any(c(atend_espe_as_qnd, atend_espe_psico_qnd, atend_espe_psiq_qnd),
+             \(x) str_detect(x, "Sessão") | str_detect(x, "Avaliação inicial"))
   ) |>
   mutate(
     atend_psi = case_when(

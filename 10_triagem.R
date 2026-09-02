@@ -51,7 +51,8 @@ tri_eleg_interv_ids <- df %>%
   mutate(
     partic_elegivel = case_when(
       (calc_elegi_triagem == 1  & 
-         aceita_particip != 'Não quero participar e não quero receber o contato da equipe') |
+         aceita_particip != 'Não quero participar e não quero receber o contato da equipe' &
+         !if_any(c(particip_eleg_continuidade:particip_eleg_continuidade_3), \(x) x %in% "Não")) |
         ((particip_eleg_continuidade == 'Sim' |
             particip_eleg_continuidade_1 == 'Sim' |
             particip_eleg_continuidade_2 == 'Sim' | 
@@ -60,7 +61,7 @@ tri_eleg_interv_ids <- df %>%
       TRUE ~ 0
     )
   ) |>
-  filter(partic_elegivel == 1 | record_id == '308') |>
+  filter(partic_elegivel == 1) |>
   distinct(record_id) |>
   anti_join(
     df |>
