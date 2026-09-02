@@ -55,9 +55,7 @@ tri_eleg_interv_ids <- df %>%
         ((particip_eleg_continuidade == 'Sim' |
             particip_eleg_continuidade_1 == 'Sim' |
             particip_eleg_continuidade_2 == 'Sim' | 
-            particip_eleg_continuidade_3 == 'Sim') & 
-           aceita_particip_2 !=
-           'Não quero receber o contato da equipe do projeto') ~ 1, 
+            particip_eleg_continuidade_3 == 'Sim')) ~ 1, 
         # atend_psiq_prosseg == "Sim" | atend_assist_encam_prosseg  == "Sim" ~ 1,
       TRUE ~ 0
     )
