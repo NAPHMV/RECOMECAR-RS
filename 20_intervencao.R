@@ -512,6 +512,20 @@ interv_interromperam_geral_str <- df |>
   paste(collapse = "\n")
 
 # Christian
+interv_interromperam_geral_christian_n <- df |>
+  filter(
+    record_id %in% interv_sa_realiz_ids &
+      redcap_event_name == "Desfecho (Arm 1: Participantes)" &
+      desfecho_participante_interv == "Retirado"
+  ) |>
+  mutate(
+    motivo = case_when(
+      desfecho_participante_motivo_exclu_interv___2 == "Checked" ~ "Desistência",
+      TRUE ~ desfecho_participante_motivo_interv)
+  ) |>
+  with(rstatix::freq_table(motivo)) |>
+  with(sum(n))
+
 interv_interromperam_geral_christian_str <- df |>
   filter(
     record_id %in% interv_sa_realiz_ids &
@@ -764,6 +778,48 @@ interv_sa_naoinicia_criterio_str <- df |>
   paste(collapse = "\n")
   
 ############## Christian
+interv_sa_naoinicia_christian_n <- df |>
+  filter(
+    record_id %in% interv_sa_naoinicia_ids & 
+      !is.na(desfecho_participante_motivo_interv)
+  ) |>
+  distinct(record_id, desfecho_participante_motivo_interv) |>
+  left_join(
+    df |>
+      anti_join(
+        df |>
+          filter(record_id %in% interv_sa_naoinicia_ids &
+                   !is.na(desfecho_participante_motivo_interv)) |>
+          distinct(record_id),
+        by = "record_id") |>
+      filter(record_id %in% interv_sa_naoinicia_ids) |>
+      distinct(record_id, motivo = tentativa_motivo_n_pros) |>
+      filter(!is.na(motivo)),
+    by = "record_id"
+  )  |>
+  mutate(
+    motivo = coalesce(desfecho_participante_motivo_interv, motivo)
+  ) |>
+  full_join(
+    df |>
+      filter(
+        if_any(
+          c(desfecho_participante_motivo_exclu_interv___1:desfecho_participante_motivo_exclu_interv___5),
+          \(x) x == "Checked")) |>
+      select(record_id, desfecho_participante_motivo_exclu_interv___1:desfecho_participante_motivo_exclu_interv___5),
+    by = "record_id"
+  ) |>
+  mutate(
+    motivo = case_when(
+      if_any(
+        c(desfecho_participante_motivo_exclu_interv___2), 
+        \(x) x == "Checked") ~ "Desistência",
+      TRUE ~ motivo
+    )
+  ) |>
+  with(rstatix::freq_table(motivo)) |>
+  with(sum(n))
+
 interv_sa_naoinicia_christian_str <- df |>
   filter(
     record_id %in% interv_sa_naoinicia_ids & 
@@ -855,6 +911,20 @@ interv_sa_exclusao_criterio_str <- df |>
   paste(collapse = "\n")
 
 ############## Christian
+interv_sa_exclusao_christian_n <- df |>
+  filter(
+    record_id %in% interv_sa_perda_post_ids &
+      !is.na(desfecho_participante_motivo_interv)
+  ) |>
+  mutate(
+    motivo = case_when(
+      desfecho_participante_motivo_exclu_interv___2 == "Checked" ~ "Desistência",
+      TRUE ~ desfecho_participante_motivo_interv
+    )
+  ) |>
+  with(rstatix::freq_table(motivo)) |>
+  with(sum(n))
+
 interv_sa_exclusao_christian_str <- df |>
   filter(
     record_id %in% interv_sa_perda_post_ids &
