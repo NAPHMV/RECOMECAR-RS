@@ -14,6 +14,12 @@ ausentes_interv_s5_vars <- data_dictionary |>
     'phq9_dta_preenchi', 'phq9_perg_1', 'phq9_perg_2', 'phq9_perg_3',
     'phq9_perg_4', 'phq9_perg_5', 'phq9_perg_6', 'phq9_perg_7', 'phq9_perg_8',
     'phq9_perg_9', 'score_phq_9', 'classific_phq_9',
+    # WAI-C ------------------------------------------------------------
+    'waic_q1', 'waic_q2', 'waic_q3', 'waic_q4', 'waic_q5', 'waic_q6',
+    'waic_q7', 'waic_q8', 'waic_q9', 'waic_q10', 'waic_q11', 'waic_q12',
+    # WAI-T ------------------------------------------------------------
+    'wait_q1', 'wait_q2', 'wait_q3', 'wait_q4', 'wait_q5', 'wait_q6',
+    'wait_q7', 'wait_q8', 'wait_q9', 'wait_q10', 'wait_q11', 'wait_q12',
     # PSYCHLOPS -------------------------------------------------------
     'psychlops_q1_2_sessao_5', 'psychlops_q2_2_sessao_5', 'psychlops_q3_2_sessao_5', 
     'psychlops_q4_1_sessao_5', 'psychlops_suic_1_sessao_5', 'psychlops_suic_1_1_sessao_5', 
