@@ -15,7 +15,7 @@ facilit_ids <- df |>
 googlesheets4::gs4_deauth()
 dados_seg_facilit <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MJaDZM8KAWofWWtFC7TvvlgBtY7vmOGq8X2ZM-lLCLg/edit?gid=0#gid=0") |>
   select(
-    `Código` = `Código do facilitador`,
+    `Código` = `ID`,
     ID = ID,
     Onda = `FASE DE INICIO`,
     Baseline,
