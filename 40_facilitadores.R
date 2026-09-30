@@ -35,6 +35,32 @@ dados_seg_facilit <- googlesheets4::read_sheet("https://docs.google.com/spreadsh
   ) |>
   select(-c(`3M`:`12M`))
 
+# dados_seg_facilit <- carrega_planilha(
+# url = "https://script.google.com/macros/s/AKfycbzj0UeLGLR5cRoS7ziVgCZdQqRELbTrrL77uaMhfSAwu4UoyFp35x-4b5hhF51Q0x-M/exec",
+# aba = "Aba1",
+# token = "tok_Ijh9VWviK65JLuWRr3dtwBE6R402bzOSyvA4cCzcQpB4cwq6zEaqFgKoWQfdc4fV"
+# ) |>
+#   select(
+#     `Código` = `ID`,
+#     ID = ID,
+#     Onda = `FASE DE INICIO`,
+#     Baseline,
+#     `3M`,
+#     `6M`,
+#     `9M`,
+#     `12M`,
+#   ) |>
+#   group_by(Onda) |>
+#   summarise(
+#     across(c("Baseline", matches("M")),
+#            \(x) sum(x == "Concluído", na.rm = TRUE)),
+#     `3 meses` = glue::glue("{`3M`}/{Baseline}"),
+#     `6 meses` = glue::glue("{`6M`}/{`3M`}"),
+#     `9 meses` = glue::glue("{`9M`}/{`6M`}"),
+#     `12 meses` = glue::glue("{`12M`}/{`9M`}")
+#   ) |>
+#   select(-c(`3M`:`12M`))
+
 
 # Atendimento ==================================================================
 ## Início --------------------------------------------------
