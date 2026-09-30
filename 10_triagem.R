@@ -6,8 +6,25 @@ tri_iniciada_n <- df %>%
 # Finalizaram =====================================
 # iniciaram e finalizaram a triagem
 tri_realiz_ids <- df |>
-  filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>% 
-  filter(!is.na(calc_elegi_triagem)) |>
+  filter(desfecho_participante %in% "Completou a participação") |>
+  distinct(record_id) |>
+  full_join(
+    df |>
+      filter(redcap_event_name == 'Triagem (Arm 1: Participantes)') %>%
+      filter(
+        !is.na(calc_elegi_triagem) &
+          !is.na(score_phq_9) &
+          !is.na(score_gad_7) &
+          (!is.na(score_pcl_5) |
+             !is.na(fez_enc_manejo_superv)) #&
+        # !is.na(score_esc_clima) &
+        # (!is.na(aceita_particip) |
+        #    !is.na(aceita_particip_2) |
+        #    !is.na(fez_enc_manejo_superv))
+      ) |>
+      distinct(record_id),
+    by = "record_id"
+  ) |>
   pull(record_id)
 
 tri_realiz_n <- length(tri_realiz_ids)
