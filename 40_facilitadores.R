@@ -240,57 +240,77 @@ facilit_seg_andamento_consent <- df |>
 
 
 # Andamento ====================================================================
+# Converte string "YYYY-MM-DD" em Date; qualquer outro texto vira NA (sem erro)
+d  <- function(x) as.Date(x, format = "%Y-%m-%d")
+# Converte timestamp do REDCap em string "YYYY-MM-DD"; "[not completed]" vira NA
+ts <- function(x) as.character(d(substr(as.character(x), 1, 10)))
+# Detecta se o texto é uma data
+eh_data <- function(x) str_detect(x, "^\\d{4}-\\d{2}-\\d{2}$")
+
 facilit_seg_andamento_resumo <- df |>
   filter(
     record_id %in% facilit_seg_andamento_consent$ID &
       redcap_event_name %in% c(
+        "Baseline (Arm 2: Facilitadores)",
         "Seguimento 3m (Arm 2: Facilitadores)",
         "Seguimento 6m (Arm 2: Facilitadores)",
         "Seguimento 9m (Arm 2: Facilitadores)",
         "Seguimento 12m (Arm 2: Facilitadores)"
       )) |>
-  select(record_id, redcap_event_name, facilit_segue_estudo, whodas_20_timestamp) |>
+  select(record_id, redcap_event_name, facilit_segue_estudo,
+         experincia_nas_enchentes_timestamp,
+         whodas_20_timestamp) |>
   mutate(
-    redcap_event_name   = paste(str_extract(redcap_event_name, "\\d+"), "meses"),
+    redcap_event_name = if_else(
+      str_detect(redcap_event_name, "^Baseline"),
+      "Baseline",
+      paste(str_extract(redcap_event_name, "\\d+"), "meses")
+    ),
     redcap_event_name = factor(
       redcap_event_name,
-      levels = c("3 meses", "6 meses", "9 meses", "12 meses")
+      levels = c("Baseline", "3 meses", "6 meses", "9 meses", "12 meses")
     ),
-    whodas_20_timestamp = case_when(
-      facilit_segue_estudo == "Não" ~ "Saiu do estudo",
-      facilit_segue_estudo == "Sim" &
-        is.na(whodas_20_timestamp)  ~ "Indisponível",
-      facilit_segue_estudo == "Sim" & 
-        !is.na(whodas_20_timestamp) ~ as.character(as.Date(whodas_20_timestamp)),
-      TRUE ~ NA
+    data_coleta = if_else(
+      redcap_event_name == "Baseline",
+      ts(experincia_nas_enchentes_timestamp),
+      ts(whodas_20_timestamp)
+    ),
+    status = case_when(
+      redcap_event_name == "Baseline" & !is.na(data_coleta) ~ data_coleta,
+      redcap_event_name == "Baseline"                       ~ "Indisponível",
+      facilit_segue_estudo == "Não"                         ~ "Saiu do estudo",
+      facilit_segue_estudo == "Sim" & is.na(data_coleta)    ~ "Indisponível",
+      facilit_segue_estudo == "Sim"                         ~ data_coleta,
+      TRUE ~ NA_character_
     )
   ) |>
-  pivot_wider(id_cols = 'record_id', names_from = 'redcap_event_name', 
-              values_from = 'whodas_20_timestamp', names_expand = TRUE) |>
+  pivot_wider(id_cols = record_id, names_from = redcap_event_name,
+              values_from = status, names_expand = TRUE) |>
   mutate(
     `6 meses`  = if_else(`3 meses` == "Saiu do estudo", "", `6 meses`),
     `9 meses`  = if_else(`6 meses` == "Saiu do estudo" | `6 meses` == "", "", `9 meses`),
     `12 meses` = if_else(`9 meses` == "Saiu do estudo" | `9 meses` == "", "", `12 meses`),
-    # Datas previstas
+    
+    `3 meses` = case_when(
+      is.na(`3 meses`) & eh_data(Baseline) ~ paste("Previsão:", d(Baseline) + 90),
+      TRUE ~ `3 meses`
+    ),
     `6 meses` = case_when(
-      is.na(`6 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 90),
+      is.na(`6 meses`) & eh_data(`3 meses`) ~ paste("Previsão:", d(`3 meses`) + 90),
+      is.na(`6 meses`) & eh_data(Baseline)  ~ paste("Previsão:", d(Baseline) + 180),
       TRUE ~ `6 meses`
     ),
     `9 meses` = case_when(
-      is.na(`9 meses`) & str_detect(`6 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`6 meses`, format = "%Y-%m-%d") + 90),
-      is.na(`9 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 180),
+      is.na(`9 meses`) & eh_data(`6 meses`) ~ paste("Previsão:", d(`6 meses`) + 90),
+      is.na(`9 meses`) & eh_data(`3 meses`) ~ paste("Previsão:", d(`3 meses`) + 180),
+      is.na(`9 meses`) & eh_data(Baseline)  ~ paste("Previsão:", d(Baseline) + 270),
       TRUE ~ `9 meses`
     ),
     `12 meses` = case_when(
-      is.na(`12 meses`) & str_detect(`9 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`9 meses`, format = "%Y-%m-%d") + 90),
-      is.na(`12 meses`) & str_detect(`6 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`6 meses`, format = "%Y-%m-%d") + 180),
-      is.na(`12 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 270),
+      is.na(`12 meses`) & eh_data(`9 meses`) ~ paste("Previsão:", d(`9 meses`) + 90),
+      is.na(`12 meses`) & eh_data(`6 meses`) ~ paste("Previsão:", d(`6 meses`) + 180),
+      is.na(`12 meses`) & eh_data(`3 meses`) ~ paste("Previsão:", d(`3 meses`) + 270),
+      is.na(`12 meses`) & eh_data(Baseline)  ~ paste("Previsão:", d(Baseline) + 360),
       TRUE ~ `12 meses`
     )
   ) |>
