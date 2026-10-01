@@ -49,20 +49,33 @@ ausentes_interv_s1_condicoes <- list(
 )
 
 ausentes_interv_s1_escopo <- c(
-  setNames(rep(list(interv_s1_realiz_ids), 
-               length(ausentes_interv_s1_vars)), 
-           ausentes_interv_s1_vars)
+  setNames(
+    rep(list(interv_s1_realiz_ids), 
+        length(
+          ausentes_interv_s1_vars[!ausentes_interv_s1_vars %in% "escalas_auto_gravacao_confirma"])), 
+    ausentes_interv_s1_vars[!ausentes_interv_s1_vars %in% "escalas_auto_gravacao_confirma"]
+  )
 )
+ausentes_interv_s1_escopo$escalas_auto_gravacao_confirma <- df |>
+  filter(
+    str_detect(redcap_event_name, "apresenta") &
+      (consent_adol == "Sim, autorizo a gravação da minha imagem e/ou voz" |
+         consent_resp == "Sim, autorizo a gravação da imagem e/ou voz do adolescente pelo qual sou responsável")
+  ) |>
+  distinct(record_id) |>
+  pull()
 
 
 # checagem de sanidade
 stopifnot(!any(duplicated(names(ausentes_interv_s1_escopo))))
 
 ausentes_interv_s1_df <- checar_faltantes(
-  df |>
+  df = df |>
     filter(
       redcap_event_name == "Sessao 1 (Arm 1: Participantes)" &
-        record_id %in% interv_s1_realiz_ids), 
+        record_id %in% interv_s1_realiz_ids),
   id_col = "record_id", 
   vars = ausentes_interv_s1_vars, 
-  condicoes = ausentes_interv_s1_condicoes)
+  condicoes = ausentes_interv_s1_condicoes,
+  escopo = ausentes_interv_s1_escopo
+)
