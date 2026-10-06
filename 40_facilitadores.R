@@ -291,8 +291,24 @@ facilit_seg_andamento_consent <- carrega_planilha(
     Consentimento = `Data TCLE`
   ) |>
   mutate(
+    ID = as.character(ID),
     Consentimento = as.Date(Consentimento)
-  )
+  ) |>
+  full_join(
+    df |>
+      filter(
+        redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
+          tcle_consentiu_questionarios == "Sim" &
+          record_id %in% facilit_ids) |>
+      reframe(ID = record_id, Consentimento2 = as.Date(data_preenchi_facili)),
+    by = "ID"
+  ) |>
+  mutate(
+    ID2 = as.numeric(ID),
+    Consentimento = coalesce(Consentimento, Consentimento2)
+  ) |>
+  arrange(ID2) |>
+  select(-c(ID2, Consentimento2))
 
 # Andamento ====================================================================
 # Converte string "YYYY-MM-DD" em Date; qualquer outro texto vira NA (sem erro)
