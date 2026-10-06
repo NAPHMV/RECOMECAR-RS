@@ -28,9 +28,9 @@ dados_seg_facilit <- googlesheets4::read_sheet("https://docs.google.com/spreadsh
   summarise(
     across(c("Baseline", matches("M")),
            \(x) sum(x == "Concluído", na.rm = TRUE)),
-    `3 meses` = glue::glue("{`3M`}/{Baseline}"),
-    `6 meses` = glue::glue("{`6M`}/{`3M`}"),
-    `9 meses` = glue::glue("{`9M`}/{`6M`}"),
+    `3 meses`  = glue::glue("{`3M`}/{Baseline}"),
+    `6 meses`  = glue::glue("{`6M`}/{`3M`}"),
+    `9 meses`  = glue::glue("{`9M`}/{`6M`}"),
     `12 meses` = glue::glue("{`12M`}/{`9M`}")
   ) |>
   select(-c(`3M`:`12M`))
@@ -281,14 +281,18 @@ facilit_atend_n_dt <- make_dt(
 
 
 # Consentimento ================================================================
-facilit_seg_andamento_consent <- df |>
-  filter(
-    redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
-      tcle_consentiu_questionarios == "Sim" &
-      record_id %in% facilit_ids
+facilit_seg_andamento_consent <- carrega_planilha(
+  url = "https://script.google.com/macros/s/AKfycbzj0UeLGLR5cRoS7ziVgCZdQqRELbTrrL77uaMhfSAwu4UoyFp35x-4b5hhF51Q0x-M/exec",
+  aba = "Aba1",
+  token = "tok_Ijh9VWviK65JLuWRr3dtwBE6R402bzOSyvA4cCzcQpB4cwq6zEaqFgKoWQfdc4fV"
+) |>
+  select(
+    ID   = ID,
+    Consentimento = `Data TCLE`
   ) |>
-  reframe(ID = record_id, Consentimento = as.Date(data_preenchi_facili))
-
+  mutate(
+    Consentimento = as.Date(Consentimento)
+  )
 
 # Andamento ====================================================================
 # Converte string "YYYY-MM-DD" em Date; qualquer outro texto vira NA (sem erro)
