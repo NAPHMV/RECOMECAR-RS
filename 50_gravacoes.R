@@ -3,7 +3,11 @@ dados_gravacoes_raw <- carrega_planilha(url_gravacoes, "ControleGravacoes", toke
 names(dados_gravacoes_raw) <- c("ID", "Código", "Sessão A", "Sessão A - Data",
                                 "Sessão 1", "Sessão 1 - Data", "Sessão 2", "Sessão 2 - Data",
                                 "Sessão 3", "Sessão 3 - Data", "Sessão 4", "Sessão 4 - Data",
-                                "Sessão 5", "Sessão 5 - Data", "Sessão F", "Sessão F - Data")
+                                "Sessão 5", "Sessão 5 - Data", "Sessão F", "Sessão F - Data",
+                                "FINALIZADO")
+
+dados_gravacoes_raw <- dados_gravacoes_raw |>
+  select(-FINALIZADO)
 
 dados_gravacoes_raw_long <- dados_gravacoes_raw |>
   rename_with(~ str_replace(.x, " - Data$", "__data"), starts_with("Sessão")) |>
@@ -22,3 +26,4 @@ dados_gravacoes_raw_long <- dados_gravacoes_raw |>
 # Aba Facilitadores ===========================================================
 dados_gravacoes_facilit <- carrega_planilha(url_gravacoes, "Facilitadores", token_gravacoes)
 names(dados_gravacoes_facilit) <- c("codigo", "info", "facilit_nome", "superv_nome")
+

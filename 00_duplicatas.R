@@ -5,7 +5,7 @@
 
 df_ids_duplicados <- df |>
   transmute(
-    record_id = as.character(record_id),
+    record_id    = as.character(record_id),
     nome_key     = ifelse(!is.na(nome) & trimws(nome) != "", paste0("N_", trimws(tolower(nome))), NA),
     telefone_key = ifelse(!is.na(telefone), paste0("T_", telefone), NA)
   ) |>
@@ -110,5 +110,4 @@ if (F) {
            str_detect(redcap_event_name, "Desfecho")) |>
     select(record_id, desfecho_participante, desfecho_participante_motivo_exclu) |>
     writexl::write_xlsx("ids_duplicados_preenchimento_2026_08_28.xlsx")
-  
 }

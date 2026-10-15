@@ -310,6 +310,7 @@ facilit_seg_andamento_consent <- carrega_planilha(
   arrange(ID2) |>
   select(-c(ID2, Consentimento2))
 
+
 # Andamento ====================================================================
 # Converte string "YYYY-MM-DD" em Date; qualquer outro texto vira NA (sem erro)
 d  <- function(x) as.Date(x, format = "%Y-%m-%d")
