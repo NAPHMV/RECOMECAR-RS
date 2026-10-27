@@ -247,7 +247,10 @@ facilit_atend_n_dt <- make_dt(
 #   )
 facilit_seg_andamento_consent <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MJaDZM8KAWofWWtFC7TvvlgBtY7vmOGq8X2ZM-lLCLg/edit?gid=0#gid=0") |>
   select(ID, Consentimento = `Data TCLE`, Baseline) |>
-  mutate(ID = as.character(ID)) |>
+  mutate(
+    ID            = as.character(ID),
+    Consentimento = as.Date(Consentimento)
+  ) |>
   right_join(
     df |>
       filter(
@@ -278,11 +281,6 @@ facilit_seg_andamento_resumo <- df |>
         "Seguimento 12m (Arm 2: Facilitadores)"
       )) |>
   select(record_id, redcap_event_name, facilit_segue_estudo, whodas_20_timestamp) |>
-  left_join(
-    facilit_seg_andamento_consent |>
-      rename(record_id = ID), 
-    by = "record_id"
-  ) |>
   mutate(
     redcap_event_name = paste(str_extract(redcap_event_name, "\\d+"), "meses"),
     redcap_event_name = factor(
@@ -298,9 +296,17 @@ facilit_seg_andamento_resumo <- df |>
       TRUE ~ NA
     )
   ) |>
-  pivot_wider(id_cols = c('record_id', 'Consentimento'), 
-              names_from = 'redcap_event_name', 
-              values_from = 'whodas_20_timestamp', names_expand = TRUE) |>
+  pivot_wider(
+    id_cols     = c('record_id'), 
+    names_from  = 'redcap_event_name', 
+    values_from = 'whodas_20_timestamp', names_expand = TRUE
+  ) |>
+  full_join(
+    facilit_seg_andamento_consent |>
+      rename(record_id = ID) |>
+      select(record_id, Consentimento), 
+    by = "record_id"
+  ) |>
   mutate(
     `6 meses`  = if_else(`3 meses` == "Saiu do estudo", "", `6 meses`),
     `9 meses`  = if_else(`6 meses` == "Saiu do estudo" | `6 meses` == "", "", `9 meses`),
