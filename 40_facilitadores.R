@@ -230,20 +230,32 @@ facilit_atend_n_dt <- make_dt(
 
 
 # Consentimento ================================================================
-facilit_seg_andamento_consent <- df |>
-  filter(
-    redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
-      tcle_consentiu_questionarios == "Sim" &
-      record_id %in% facilit_ids
-  ) |>
-  reframe(
-    ID            = record_id,
-    Consentimento = as.Date(data_preenchi_facili)
-  ) |>
-  left_join(
-    dados_seg_facilit |>
-      select(ID, Baseline),
-    by = "ID"
+# facilit_seg_andamento_consent <- df |>
+#   filter(
+#     redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
+#       tcle_consentiu_questionarios == "Sim" &
+#       record_id %in% facilit_ids
+#   ) |>
+#   reframe(
+#     ID            = record_id,
+#     Consentimento = as.Date(data_preenchi_facili)
+#   ) |>
+#   left_join(
+#     dados_seg_facilit |>
+#       select(ID, Baseline),
+#     by = "ID"
+#   )
+facilit_seg_andamento_consent <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MJaDZM8KAWofWWtFC7TvvlgBtY7vmOGq8X2ZM-lLCLg/edit?gid=0#gid=0") |>
+  select(ID, `Data TCLE`, Baseline) |>
+  right_join(
+    df |>
+      filter(
+            redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
+              tcle_consentiu_questionarios == "Sim" &
+              record_id %in% facilit_ids
+          ) |>
+      select(ID = record_id),
+    by = 'ID'
   )
 
 facilit_seg_andamento_baseline_consent <- df |>
