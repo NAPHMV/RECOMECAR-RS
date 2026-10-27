@@ -236,7 +236,11 @@ facilit_seg_andamento_consent <- df |>
       tcle_consentiu_questionarios == "Sim" &
       record_id %in% facilit_ids
   ) |>
-  reframe(ID = record_id, Consentimento = as.Date(data_preenchi_facili))
+  reframe(
+    ID            = record_id,
+    Consentimento = as.Date(data_preenchi_facili),
+    Baseline      = "Sim"
+  )
 
 facilit_seg_andamento_baseline_consent <- df |>
   filter(
