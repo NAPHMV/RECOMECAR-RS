@@ -238,8 +238,12 @@ facilit_seg_andamento_consent <- df |>
   ) |>
   reframe(
     ID            = record_id,
-    Consentimento = as.Date(data_preenchi_facili),
-    Baseline      = "Sim"
+    Consentimento = as.Date(data_preenchi_facili)
+  ) |>
+  left_join(
+    dados_seg_facilit |>
+      select(ID, Baseline),
+    by = "ID"
   )
 
 facilit_seg_andamento_baseline_consent <- df |>
