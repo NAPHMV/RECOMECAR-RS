@@ -238,6 +238,13 @@ facilit_seg_andamento_consent <- df |>
   ) |>
   reframe(ID = record_id, Consentimento = as.Date(data_preenchi_facili))
 
+facilit_seg_andamento_baseline_consent <- df |>
+  filter(
+    redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
+      tcle_consentiu_questionarios == "Sim" &
+      record_id %in% facilit_ids
+  ) |>
+  reframe(ID = record_id, Consentimento = as.Date(data_preenchi_facili))
 
 # Andamento ====================================================================
 facilit_seg_andamento_resumo <- df |>
@@ -250,8 +257,13 @@ facilit_seg_andamento_resumo <- df |>
         "Seguimento 12m (Arm 2: Facilitadores)"
       )) |>
   select(record_id, redcap_event_name, facilit_segue_estudo, whodas_20_timestamp) |>
+  left_join(
+    facilit_seg_andamento_consent |>
+      rename(record_id = ID), 
+    by = "record_id"
+  ) |>
   mutate(
-    redcap_event_name   = paste(str_extract(redcap_event_name, "\\d+"), "meses"),
+    redcap_event_name = paste(str_extract(redcap_event_name, "\\d+"), "meses"),
     redcap_event_name = factor(
       redcap_event_name,
       levels = c("3 meses", "6 meses", "9 meses", "12 meses")
@@ -272,29 +284,29 @@ facilit_seg_andamento_resumo <- df |>
     `9 meses`  = if_else(`6 meses` == "Saiu do estudo" | `6 meses` == "", "", `9 meses`),
     `12 meses` = if_else(`9 meses` == "Saiu do estudo" | `9 meses` == "", "", `12 meses`),
     # Datas previstas
+    `3 meses` = case_when(
+      is.na(`3 meses`) & str_detect(`Consentimento`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`Consentimento`, format = "%Y-%m-%d") + 30*3),
+      TRUE ~ `3 meses`
+    ),
     `6 meses` = case_when(
-      is.na(`6 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 90),
+      is.na(`6 meses`) & str_detect(`Consentimento`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`Consentimento`, format = "%Y-%m-%d") + 30*6),
       TRUE ~ `6 meses`
     ),
     `9 meses` = case_when(
-      is.na(`9 meses`) & str_detect(`6 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`6 meses`, format = "%Y-%m-%d") + 90),
-      is.na(`9 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 180),
+      is.na(`9 meses`) & str_detect(`Consentimento`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`Consentimento`, format = "%Y-%m-%d") + 30*9),
       TRUE ~ `9 meses`
     ),
     `12 meses` = case_when(
-      is.na(`12 meses`) & str_detect(`9 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`9 meses`, format = "%Y-%m-%d") + 90),
-      is.na(`12 meses`) & str_detect(`6 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`6 meses`, format = "%Y-%m-%d") + 180),
-      is.na(`12 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
-        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 270),
+      is.na(`12 meses`) & str_detect(`Consentimento`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`Consentimento`, format = "%Y-%m-%d") + 30*12),
       TRUE ~ `12 meses`
     )
   ) |>
-  rename(ID = record_id)
+  rename(ID = record_id) |>
+  select(-Consentimento)
 
 # Sairam ======================================================================
 facilit_sairam_ids <- facilit_seg_andamento_resumo |>
