@@ -16,7 +16,7 @@ googlesheets4::gs4_deauth()
 dados_seg_facilit <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MJaDZM8KAWofWWtFC7TvvlgBtY7vmOGq8X2ZM-lLCLg/edit?gid=0#gid=0") |>
   select(
     `Código` = `ID`,
-    ID = ID,
+    ID   = ID,
     Onda = `FASE DE INICIO`,
     Baseline,
     `3M`,
@@ -28,89 +28,38 @@ dados_seg_facilit <- googlesheets4::read_sheet("https://docs.google.com/spreadsh
   summarise(
     across(c("Baseline", matches("M")),
            \(x) sum(x == "Concluído", na.rm = TRUE)),
-    `3 meses`  = glue::glue("{`3M`}/{Baseline}"),
-    `6 meses`  = glue::glue("{`6M`}/{`3M`}"),
-    `9 meses`  = glue::glue("{`9M`}/{`6M`}"),
-    `12 meses` = glue::glue("{`12M`}/{`9M`}")
-  ) |>
-  select(-c(`3M`:`12M`))
-
-dados_seg_facilit2 <- carrega_planilha(
-  url = "https://script.google.com/macros/s/AKfycbzj0UeLGLR5cRoS7ziVgCZdQqRELbTrrL77uaMhfSAwu4UoyFp35x-4b5hhF51Q0x-M/exec",
-  aba = "Aba1",
-  token = "tok_Ijh9VWviK65JLuWRr3dtwBE6R402bzOSyvA4cCzcQpB4cwq6zEaqFgKoWQfdc4fV"
-) |>
-  select(
-    ID   = ID,
-    Onda = `FASE DE INICIO`
-  ) |>
-  mutate(ID = as.character(ID)) |>
-  # Baseline
-  left_join(
-    df |>
-      filter(
-        redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
-          experincia_nas_enchentes_complete == "Complete"
-      ) |>
-      select(ID = record_id) |>
-      mutate(`Baseline` = "Concluído"),
-    by = "ID"
-  ) |>
-  # 3 meses
-  left_join(
-    df |>
-      filter(
-        redcap_event_name == "Seguimento 3m (Arm 2: Facilitadores)" &
-          whodas_20_complete == "Complete"
-      ) |>
-      select(ID = record_id) |>
-      mutate(`3M` = "Concluído"),
-    by = "ID"
-  ) |>
-  # 6 meses
-  left_join(
-    df |>
-      filter(
-        redcap_event_name == "Seguimento 6m (Arm 2: Facilitadores)" &
-          whodas_20_complete == "Complete"
-      ) |>
-      select(ID = record_id) |>
-      mutate(`6M` = "Concluído"),
-    by = "ID"
-  ) |>
-  # 9 meses
-  left_join(
-    df |>
-      filter(
-        redcap_event_name == "Seguimento 9m (Arm 2: Facilitadores)" &
-          whodas_20_complete == "Complete"
-      ) |>
-      select(ID = record_id) |>
-      mutate(`9M` = "Concluído"),
-    by = "ID"
-  ) |>
-  # 12 meses
-  left_join(
-    df |>
-      filter(
-        redcap_event_name == "Seguimento 12m (Arm 2: Facilitadores)" &
-          whodas_20_complete == "Complete"
-      ) |>
-      select(ID = record_id) |>
-      mutate(`12M` = "Concluído"),
-    by = "ID"
-  ) |>
-  # Soma concluídos
-  group_by(Onda) |>
-  summarise(
-    across(c("Baseline", matches("M")),
-           \(x) sum(x == "Concluído", na.rm = TRUE)),
     `3 meses` = glue::glue("{`3M`}/{Baseline}"),
     `6 meses` = glue::glue("{`6M`}/{`3M`}"),
     `9 meses` = glue::glue("{`9M`}/{`6M`}"),
     `12 meses` = glue::glue("{`12M`}/{`9M`}")
   ) |>
   select(-c(`3M`:`12M`))
+
+# dados_seg_facilit <- carrega_planilha(
+# url = "https://script.google.com/macros/s/AKfycbzj0UeLGLR5cRoS7ziVgCZdQqRELbTrrL77uaMhfSAwu4UoyFp35x-4b5hhF51Q0x-M/exec",
+# aba = "Aba1",
+# token = "tok_Ijh9VWviK65JLuWRr3dtwBE6R402bzOSyvA4cCzcQpB4cwq6zEaqFgKoWQfdc4fV"
+# ) |>
+#   select(
+#     `Código` = `ID`,
+#     ID = ID,
+#     Onda = `FASE DE INICIO`,
+#     Baseline,
+#     `3M`,
+#     `6M`,
+#     `9M`,
+#     `12M`,
+#   ) |>
+#   group_by(Onda) |>
+#   summarise(
+#     across(c("Baseline", matches("M")),
+#            \(x) sum(x == "Concluído", na.rm = TRUE)),
+#     `3 meses` = glue::glue("{`3M`}/{Baseline}"),
+#     `6 meses` = glue::glue("{`6M`}/{`3M`}"),
+#     `9 meses` = glue::glue("{`9M`}/{`6M`}"),
+#     `12 meses` = glue::glue("{`12M`}/{`9M`}")
+#   ) |>
+#   select(-c(`3M`:`12M`))
 
 
 # Atendimento ==================================================================
@@ -281,112 +230,88 @@ facilit_atend_n_dt <- make_dt(
 
 
 # Consentimento ================================================================
-facilit_seg_andamento_consent <- carrega_planilha(
-  url = "https://script.google.com/macros/s/AKfycbzj0UeLGLR5cRoS7ziVgCZdQqRELbTrrL77uaMhfSAwu4UoyFp35x-4b5hhF51Q0x-M/exec",
-  aba = "Aba1",
-  token = "tok_Ijh9VWviK65JLuWRr3dtwBE6R402bzOSyvA4cCzcQpB4cwq6zEaqFgKoWQfdc4fV"
-) |>
-  select(
-    ID   = ID,
-    Consentimento = `Data TCLE`
+facilit_seg_andamento_consent <- df |>
+  filter(
+    redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
+      tcle_consentiu_questionarios == "Sim" &
+      record_id %in% facilit_ids
   ) |>
-  mutate(
-    ID = as.character(ID),
-    Consentimento = as.Date(Consentimento)
-  ) |>
-  full_join(
-    df |>
-      filter(
-        redcap_event_name == "Baseline (Arm 2: Facilitadores)" &
-          tcle_consentiu_questionarios == "Sim" &
-          record_id %in% facilit_ids) |>
-      reframe(ID = record_id, Consentimento2 = as.Date(data_preenchi_facili)),
-    by = "ID"
-  ) |>
-  mutate(
-    ID2 = as.numeric(ID),
-    Consentimento = coalesce(Consentimento, Consentimento2)
-  ) |>
-  arrange(ID2) |>
-  select(-c(ID2, Consentimento2))
+  reframe(ID = record_id, Consentimento = as.Date(data_preenchi_facili))
 
 
 # Andamento ====================================================================
-# Converte string "YYYY-MM-DD" em Date; qualquer outro texto vira NA (sem erro)
-d  <- function(x) as.Date(x, format = "%Y-%m-%d")
-# Converte timestamp do REDCap em string "YYYY-MM-DD"; "[not completed]" vira NA
-ts <- function(x) as.character(d(substr(as.character(x), 1, 10)))
-# Detecta se o texto é uma data
-eh_data <- function(x) str_detect(x, "^\\d{4}-\\d{2}-\\d{2}$")
-
 facilit_seg_andamento_resumo <- df |>
   filter(
     record_id %in% facilit_seg_andamento_consent$ID &
       redcap_event_name %in% c(
-        "Baseline (Arm 2: Facilitadores)",
         "Seguimento 3m (Arm 2: Facilitadores)",
         "Seguimento 6m (Arm 2: Facilitadores)",
         "Seguimento 9m (Arm 2: Facilitadores)",
         "Seguimento 12m (Arm 2: Facilitadores)"
       )) |>
-  select(record_id, redcap_event_name, facilit_segue_estudo,
-         experincia_nas_enchentes_timestamp,
-         whodas_20_timestamp) |>
+  select(record_id, redcap_event_name, facilit_segue_estudo, whodas_20_timestamp) |>
   mutate(
-    redcap_event_name = if_else(
-      str_detect(redcap_event_name, "^Baseline"),
-      "Baseline",
-      paste(str_extract(redcap_event_name, "\\d+"), "meses")
-    ),
+    redcap_event_name   = paste(str_extract(redcap_event_name, "\\d+"), "meses"),
     redcap_event_name = factor(
       redcap_event_name,
-      levels = c("Baseline", "3 meses", "6 meses", "9 meses", "12 meses")
+      levels = c("3 meses", "6 meses", "9 meses", "12 meses")
     ),
-    data_coleta = if_else(
-      redcap_event_name == "Baseline",
-      ts(experincia_nas_enchentes_timestamp),
-      ts(whodas_20_timestamp)
-    ),
-    status = case_when(
-      redcap_event_name == "Baseline" & !is.na(data_coleta) ~ data_coleta,
-      redcap_event_name == "Baseline"                       ~ "Indisponível",
-      facilit_segue_estudo == "Não"                         ~ "Saiu do estudo",
-      facilit_segue_estudo == "Sim" & is.na(data_coleta)    ~ "Indisponível",
-      facilit_segue_estudo == "Sim"                         ~ data_coleta,
-      TRUE ~ NA_character_
+    whodas_20_timestamp = case_when(
+      facilit_segue_estudo == "Não" ~ "Saiu do estudo",
+      facilit_segue_estudo == "Sim" &
+        is.na(whodas_20_timestamp)  ~ "Indisponível",
+      facilit_segue_estudo == "Sim" & 
+        !is.na(whodas_20_timestamp) ~ as.character(as.Date(whodas_20_timestamp)),
+      TRUE ~ NA
     )
   ) |>
-  pivot_wider(id_cols = record_id, names_from = redcap_event_name,
-              values_from = status, names_expand = TRUE) |>
+  pivot_wider(id_cols = 'record_id', names_from = 'redcap_event_name', 
+              values_from = 'whodas_20_timestamp', names_expand = TRUE) |>
   mutate(
     `6 meses`  = if_else(`3 meses` == "Saiu do estudo", "", `6 meses`),
     `9 meses`  = if_else(`6 meses` == "Saiu do estudo" | `6 meses` == "", "", `9 meses`),
     `12 meses` = if_else(`9 meses` == "Saiu do estudo" | `9 meses` == "", "", `12 meses`),
-    
-    `3 meses` = case_when(
-      is.na(`3 meses`) & eh_data(Baseline) ~ paste("Previsão:", d(Baseline) + 90),
-      TRUE ~ `3 meses`
-    ),
+    # Datas previstas
     `6 meses` = case_when(
-      is.na(`6 meses`) & eh_data(`3 meses`) ~ paste("Previsão:", d(`3 meses`) + 90),
-      is.na(`6 meses`) & eh_data(Baseline)  ~ paste("Previsão:", d(Baseline) + 180),
+      is.na(`6 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 90),
       TRUE ~ `6 meses`
     ),
     `9 meses` = case_when(
-      is.na(`9 meses`) & eh_data(`6 meses`) ~ paste("Previsão:", d(`6 meses`) + 90),
-      is.na(`9 meses`) & eh_data(`3 meses`) ~ paste("Previsão:", d(`3 meses`) + 180),
-      is.na(`9 meses`) & eh_data(Baseline)  ~ paste("Previsão:", d(Baseline) + 270),
+      is.na(`9 meses`) & str_detect(`6 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`6 meses`, format = "%Y-%m-%d") + 90),
+      is.na(`9 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 180),
       TRUE ~ `9 meses`
     ),
     `12 meses` = case_when(
-      is.na(`12 meses`) & eh_data(`9 meses`) ~ paste("Previsão:", d(`9 meses`) + 90),
-      is.na(`12 meses`) & eh_data(`6 meses`) ~ paste("Previsão:", d(`6 meses`) + 180),
-      is.na(`12 meses`) & eh_data(`3 meses`) ~ paste("Previsão:", d(`3 meses`) + 270),
-      is.na(`12 meses`) & eh_data(Baseline)  ~ paste("Previsão:", d(Baseline) + 360),
+      is.na(`12 meses`) & str_detect(`9 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`9 meses`, format = "%Y-%m-%d") + 90),
+      is.na(`12 meses`) & str_detect(`6 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`6 meses`, format = "%Y-%m-%d") + 180),
+      is.na(`12 meses`) & str_detect(`3 meses`, "^\\d{4}-\\d{2}-\\d{2}$") ~ 
+        paste("Previsão:", as.Date(`3 meses`, format = "%Y-%m-%d") + 270),
       TRUE ~ `12 meses`
     )
   ) |>
   rename(ID = record_id)
+
+# Sairam ======================================================================
+facilit_sairam_ids <- facilit_seg_andamento_resumo |>
+  filter(
+    if_any(everything(), \(x) x == "Saiu do estudo")
+  ) |>
+  distinct(ID) |>
+  pull()
+
+# Finalizaram ======================================================================
+facilit_12m_realiz_ids <- df |>
+  filter(
+    redcap_event_name %in% "Seguimento 12m (Arm 2: Facilitadores)" &
+      pss_complete == "Complete"
+  ) |>
+  distinct(record_id) |>
+  pull()
 
 
 # Manejo =======================================================================
@@ -553,21 +478,21 @@ facilit_tab1_build <- function(df) {
   select(-outra_area_est_facilitador) |>
   tbl_summary(
     label = list(
-      idade_facilitador ~ "Idade",
-      genero_facilitador ~ "Gênero",
-      raca_facilitador ~ "Raça/cor",
+      idade_facilitador        ~ "Idade",
+      genero_facilitador       ~ "Gênero",
+      raca_facilitador         ~ "Raça/cor",
       escolaridade_facilitador ~ "Escolaridade",
-      area_est_facilitador ~ "Área de estudo",
-      trab_volunt_facilitador ~ "Trabalho voluntário",
-      sair_casa_facilitador ~ "Precisou sair/dormir fora de casa"
+      area_est_facilitador     ~ "Área de estudo",
+      trab_volunt_facilitador  ~ "Trabalho voluntário",
+      sair_casa_facilitador    ~ "Precisou sair/dormir fora de casa"
     ),
     type = list(
       trab_volunt_facilitador ~ "dichotomous",
-      sair_casa_facilitador ~ "dichotomous"
+      sair_casa_facilitador   ~ "dichotomous"
     ),
     value = list(
       trab_volunt_facilitador ~ "Sim",
-      sair_casa_facilitador ~ "Sim"
+      sair_casa_facilitador   ~ "Sim"
     ),
     statistic = list(
       all_categorical() ~ "{n} ({p}%)",
