@@ -277,7 +277,8 @@ facilit_seg_andamento_resumo <- df |>
       TRUE ~ NA
     )
   ) |>
-  pivot_wider(id_cols = 'record_id', names_from = 'redcap_event_name', 
+  pivot_wider(id_cols = c('record_id', 'Consentimento'), 
+              names_from = 'redcap_event_name', 
               values_from = 'whodas_20_timestamp', names_expand = TRUE) |>
   mutate(
     `6 meses`  = if_else(`3 meses` == "Saiu do estudo", "", `6 meses`),
