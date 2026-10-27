@@ -246,7 +246,7 @@ facilit_atend_n_dt <- make_dt(
 #     by = "ID"
 #   )
 facilit_seg_andamento_consent <- googlesheets4::read_sheet("https://docs.google.com/spreadsheets/d/1MJaDZM8KAWofWWtFC7TvvlgBtY7vmOGq8X2ZM-lLCLg/edit?gid=0#gid=0") |>
-  select(ID, `Data TCLE`, Baseline) |>
+  select(ID, Consentimento = `Data TCLE`, Baseline) |>
   right_join(
     df |>
       filter(
