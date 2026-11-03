@@ -210,7 +210,7 @@ seg_particip_andamento_df <- interv_andamento_df |>
     ano_3m    = stringr::str_extract(`3 meses`, "\\d{4}"),
     ano_6m    = stringr::str_extract(`6 meses`, "\\d{4}")
   ) |>
-  select(-c(prev_3m, prev_6m)) |>
+  select(-c(prev_3m, prev_6m))
   
 
 # Dados desfecho ===============================================================
