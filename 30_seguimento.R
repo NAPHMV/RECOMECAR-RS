@@ -175,6 +175,44 @@ dados_andamento_seg_particip <- data.frame(
     value = if_else(is.na(value), 0, value)
   )
 
+
+# Andamento ====================================================================
+seg_particip_andamento_df <- interv_andamento_df |>
+  select(record_id, `Sessão A` = sessao_A_data) |>
+  full_join(
+    df |>
+      filter(redcap_event_name == "Seguimento 3m (Arm 1: Participantes)") |>
+      reframe(
+        record_id = record_id,
+        `3 meses` = coalesce(as.Date(whodas_20_timestamp), as.Date(phq9_dta_preenchi))
+      ),
+    by = "record_id"
+  ) |>
+  full_join(
+    df |>
+      filter(redcap_event_name == "Seguimento 6m (Arm 1: Participantes)") |>
+      reframe(
+        record_id = record_id,
+        `6 meses` = coalesce(as.Date(whodas_20_timestamp), as.Date(phq9_dta_preenchi))
+      ),
+    by = "record_id"
+  ) |>
+  mutate(
+    `Sessão A` = as.Date(`Sessão A`),
+    prev_3m = paste0("Previsão: ", if_else(is.na(`3 meses`), `Sessão A` + 30*3, `3 meses`)),
+    prev_6m = paste0("Previsão: ", if_else(is.na(`6 meses`), `Sessão A` + 30*6, `6 meses`))
+  ) |>
+  mutate(
+    `3 meses` = as.character(`3 meses`),
+    `3 meses` = coalesce(`3 meses`, prev_3m),
+    `6 meses` = as.character(`6 meses`),
+    `6 meses` = coalesce(`6 meses`, prev_6m),
+    ano_3m    = stringr::str_extract(`3 meses`, "\\d{4}"),
+    ano_6m    = stringr::str_extract(`6 meses`, "\\d{4}")
+  ) |>
+  select(-c(prev_3m, prev_6m)) |>
+  
+
 # Dados desfecho ===============================================================
 ## Perdas ----------------------------------------------------
 seg_particip_3m_perda_ids <- df |>
